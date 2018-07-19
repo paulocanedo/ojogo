@@ -1,0 +1,134 @@
+#include "app.hpp"
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void processInput(GLFWwindow *window);
+
+// settings
+const unsigned int SCR_HEIGHT = 920;
+const unsigned int SCR_WIDTH = SCR_HEIGHT * 16 / 9;
+
+void quadratic_bezier_curve(float px0, float py0, float px1, float py1, float px2, float py2, float t, float &pxo, float &pyo) {
+  pxo = pow(1 - t, 2) * px0 + (1 - t) * 2 * t * px1 + t * t * px2;
+  pyo = pow(1 - t, 2) * py0 + (1 - t) * 2 * t * py1 + t * t * py2;
+}
+
+void cubic_bezier_curve(float px0, float py0, float px1, float py1, float px2, float py2, float px3, float py3, float t, float &pxo, float &pyo) {
+  pxo = pow(1 - t, 3) * px0 + pow(1 - t, 2) * 3 * t * px1 + (1 - t) * 3 * t * t * px2 + t * t * t * px3;
+  pyo = pow(1 - t, 3) * py0 + pow(1 - t, 2) * 3 * t * py1 + (1 - t) * 3 * t * t * py2 + t * t * t * py3;
+}
+
+int main()
+{
+    // glfw: initialize and configure
+    // ------------------------------
+    glfwInit();
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
+
+#ifdef __APPLE__
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // uncomment this statement to fix compilation on OS X
+#endif
+
+    // glfw window creation
+    // --------------------
+    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
+    if (window == NULL)
+    {
+        std::cout << "Failed to create GLFW window" << std::endl;
+        glfwTerminate();
+        return -1;
+    }
+    glfwMakeContextCurrent(window);
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+
+    // glad: load all OpenGL function pointers
+    // ---------------------------------------
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+    {
+        std::cout << "Failed to initialize GLAD" << std::endl;
+        return -1;
+    }
+
+    // build and compile our shader program
+    // ------------------------------------
+    Shader shader("../shaders/simple.vert", "../shaders/simple.frag");
+    // Shader shader("../shaders/simple.vert", "../shaders/reflection.frag");
+    shader.use();
+
+    // glm::mat4 projection(1.0f);
+    // glm::mat4 projection = glm::ortho(0.0f, 40.0f, 0.0f, 40.0f, -1.0f, 1.0f);
+    glm::mat4 projection = glm::ortho(0.0f, (float)SCR_WIDTH, 0.0f, (float)SCR_HEIGHT, -1.0f, 1.0f);
+    shader.setMat4("projection", projection);
+
+
+    // float time = (float)glfwGetTime();
+    Sprite sprite1;
+
+    sprite1.move(500.0f, 20.0f);
+    sprite1.scale(1379.0f * 0.15, 2806.0f * 0.15);
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    // sprite1.move(time, 5.0f, 1000.0, 100.0f);
+
+    // render loop
+    // -----------
+    while (!glfwWindowShouldClose(window))
+    {
+        // input
+        // -----
+        processInput(window);
+
+        // render
+        // ------
+        // glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+        glClearColor(0.02f, 0.05f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+
+        sprite1.draw(&shader);
+
+        // shader.setBool("reflected", true);
+        // sprite2.draw(&shader);
+
+        // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
+        // -------------------------------------------------------------------------------
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+
+        // GLenum error = glGetError();
+        // if(error != 0) {
+        //   std::cout << "erro no opengl" << '\n';;
+        // }
+    }
+
+    // optional: de-allocate all resources once they've outlived their purpose:
+    // ------------------------------------------------------------------------
+    // glDeleteVertexArrays(1, &VAO);
+    // glDeleteBuffers(1, &VBO);
+
+    // glfw: terminate, clearing all previously allocated GLFW resources.
+    // ------------------------------------------------------------------
+    glfwTerminate();
+    return 0;
+}
+
+// process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
+// ---------------------------------------------------------------------------------------------------------
+void processInput(GLFWwindow *window)
+{
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+
+}
+
+// glfw: whenever the window size changed (by OS or user resize) this callback function executes
+// ---------------------------------------------------------------------------------------------
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    // make sure the viewport matches the new window dimensions; note that width and
+    // height will be significantly larger than specified on retina displays.
+    glViewport(0, 0, width, height);
+}

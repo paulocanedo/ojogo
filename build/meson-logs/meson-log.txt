@@ -1,0 +1,47 @@
+Build started at 2018-07-17T09:21:20.491690
+Main binary: /usr/bin/python3
+Python system: Linux
+The Meson build system
+Version: 0.45.1
+Source dir: /home/paulocanedo/Development/gnome-builder/ojogo
+Build dir: /home/paulocanedo/Development/gnome-builder/ojogo/build
+Build type: native build
+Project name: ojogo
+Sanity testing C compiler: cc
+Is cross compiler: False.
+Sanity check compiler command line: cc /home/paulocanedo/Development/gnome-builder/ojogo/build/meson-private/sanitycheckc.c -o /home/paulocanedo/Development/gnome-builder/ojogo/build/meson-private/sanitycheckc.exe
+Sanity check compile stdout:
+
+-----
+Sanity check compile stderr:
+
+-----
+Running test binary command: /home/paulocanedo/Development/gnome-builder/ojogo/build/meson-private/sanitycheckc.exe
+Native C compiler: cc (gcc 7.3.0 "cc (Ubuntu 7.3.0-16ubuntu3) 7.3.0")
+Sanity testing C++ compiler: c++
+Is cross compiler: False.
+Sanity check compiler command line: c++ /home/paulocanedo/Development/gnome-builder/ojogo/build/meson-private/sanitycheckcpp.cc -o /home/paulocanedo/Development/gnome-builder/ojogo/build/meson-private/sanitycheckcpp.exe
+Sanity check compile stdout:
+
+-----
+Sanity check compile stderr:
+
+-----
+Running test binary command: /home/paulocanedo/Development/gnome-builder/ojogo/build/meson-private/sanitycheckcpp.exe
+Native C++ compiler: c++ (gcc 7.3.0 "c++ (Ubuntu 7.3.0-16ubuntu3) 7.3.0")
+Build machine cpu family: x86_64
+Build machine cpu: x86_64
+Found pkg-config: /usr/bin/pkg-config (0.29.1)
+Determining dependency 'glfw3' with pkg-config executable '/usr/bin/pkg-config'
+Native dependency glfw3 found: YES 3.2.1
+Determining dependency 'gl' with pkg-config executable '/usr/bin/pkg-config'
+Native dependency gl found: YES 18.0.5
+Determining dependency 'x11' with pkg-config executable '/usr/bin/pkg-config'
+Native dependency x11 found: YES 1.6.4
+Dependency threads found: YES
+Determining dependency 'xrandr' with pkg-config executable '/usr/bin/pkg-config'
+Native dependency xrandr found: YES 1.5.1
+Determining dependency 'xi' with pkg-config executable '/usr/bin/pkg-config'
+Native dependency xi found: YES 1.7.9
+Build targets in project: 1
+Found ninja-1.8.2 at /usr/bin/ninja
