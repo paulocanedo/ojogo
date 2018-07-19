@@ -1,8 +1,0 @@
-# ninja log v5
-1	158	1531830084	ojogo@exe/src_glad.c.o	6c7f1dc5dfb9c04c
-740	808	1532035017	ojogo	c26646d96760c60
-1	491	1531830084	ojogo@exe/src_stb_image.c.o	fa0c7aa326235a3d
-2	728	1532036762	ojogo@exe/src_main.cpp.o	bee3c4baf0d6c372
-0	752	1532036788	ojogo@exe/src_main.cpp.o	bee3c4baf0d6c372
-2	734	1532036865	ojogo@exe/src_engine_Sprite.cpp.o	3a611456c97f036a
-734	803	1532036865	ojogo	c26646d96760c60
