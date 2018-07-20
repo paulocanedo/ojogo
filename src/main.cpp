@@ -1,4 +1,6 @@
 #include "app.hpp"
+#include "engine/Sprite.hpp"
+#include "engine/Texture.hpp"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
@@ -63,15 +65,20 @@ int main()
     shader.setMat4("projection", projection);
 
 
-    // float time = (float)glfwGetTime();
-    Sprite sprite1;
+    float lastTime = (float)glfwGetTime();
+    Texture texture1;
+    texture1.load("../texturas/sprite.png");
+    Sprite sprite1(2, 4, &texture1);
 
-    sprite1.move(500.0f, 20.0f);
-    sprite1.scale(1379.0f * 0.15, 2806.0f * 0.15);
+    sprite1.move(10.0f, 10.0f);
+    sprite1.scale(texture1.getWidth() / 4.0, texture1.getHeight() / 4.0);
+    // sprite1.scale(1379.0f * 0.3, 2806.0f * 0.3);
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     // sprite1.move(time, 5.0f, 1000.0, 100.0f);
+
+    int i=0, j=0;
 
     // render loop
     // -----------
@@ -83,10 +90,19 @@ int main()
 
         // render
         // ------
-        // glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-        glClearColor(0.02f, 0.05f, 0.3f, 1.0f);
+        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+        // glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        // glClearColor(0.02f, 0.05f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
+        float currentTime = (float)glfwGetTime();
 
+        if(currentTime - lastTime > 0.1) {
+          i++;j++;
+          if(i >= 2) i =0;
+          if(j >= 4) j =0;
+          sprite1.setCurrentElement(i, j);
+          lastTime = currentTime;
+        }
 
         sprite1.draw(&shader);
 
@@ -103,6 +119,8 @@ int main()
         //   std::cout << "erro no opengl" << '\n';;
         // }
     }
+
+    sprite1.gc();
 
     // optional: de-allocate all resources once they've outlived their purpose:
     // ------------------------------------------------------------------------

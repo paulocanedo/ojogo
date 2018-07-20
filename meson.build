@@ -21,6 +21,7 @@ executable('ojogo', [
   './src/glad.c',
   './src/stb_image.c',
   './src/engine/Sprite.cpp',
+  './src/engine/Texture.cpp',
 ],
 	link_args: '-ldl',
 	dependencies: [
