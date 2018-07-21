@@ -6,7 +6,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
 
 // settings
-const unsigned int SCR_HEIGHT = 920;
+const unsigned int SCR_HEIGHT = 1024 * 2;
 const unsigned int SCR_WIDTH = SCR_HEIGHT * 16 / 9;
 
 void quadratic_bezier_curve(float px0, float py0, float px1, float py1, float px2, float py2, float t, float &pxo, float &pyo) {
@@ -55,8 +55,8 @@ int main()
 
     // build and compile our shader program
     // ------------------------------------
-    Shader shader("../shaders/simple.vert", "../shaders/simple.frag");
-    // Shader shader("../shaders/simple.vert", "../shaders/reflection.frag");
+    // Shader shader("../shaders/simple.vert", "../shaders/simple.frag");
+    Shader shader("../shaders/simple.vert", "../shaders/reflection.frag");
     shader.use();
 
     // glm::mat4 projection(1.0f);
@@ -67,12 +67,14 @@ int main()
 
     float lastTime = (float)glfwGetTime();
     Texture texture1;
-    texture1.load("../texturas/sprite.png");
+    texture1.load("../texturas/goku.png");
+    // texture1.load("./texturas/sprite.png");
     Sprite sprite1(2, 4, &texture1);
 
-    sprite1.move(10.0f, 10.0f);
-    sprite1.scale(texture1.getWidth() / 4.0, texture1.getHeight() / 4.0);
-    // sprite1.scale(1379.0f * 0.3, 2806.0f * 0.3);
+    float width  = texture1.getWidth()  / 2.0;
+    float height = texture1.getHeight() / 2.0;
+    sprite1.move((SCR_WIDTH - width) / 2.0, (SCR_HEIGHT - height) / 2.0);
+    sprite1.scale(width, height);
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -96,11 +98,11 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT);
         float currentTime = (float)glfwGetTime();
 
-        if(currentTime - lastTime > 0.1) {
+        if(currentTime - lastTime > 0.15) {
           i++;j++;
           if(i >= 2) i =0;
           if(j >= 4) j =0;
-          sprite1.setCurrentElement(i, j);
+          // sprite1.setCurrentElement(i, j);
           lastTime = currentTime;
         }
 

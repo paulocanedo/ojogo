@@ -1,5 +1,6 @@
 project('ojogo', ['cpp', 'c'],        version: '0.1.0',
   meson_version: '>= 0.40.0',
+  default_options : ['cpp_std=c++14']
 )
 
 glfw_dep = dependency('glfw3')

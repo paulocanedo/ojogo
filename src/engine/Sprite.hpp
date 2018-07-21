@@ -1,23 +1,22 @@
 #pragma once
 
-#include "../app.hpp"
 #include "Texture.hpp"
 
 class Sprite
 {
 public:
-  Sprite(int rows, int columns, Texture *texture);
+  Sprite(int rows = 1, int columns = 1, Texture *texture = nullptr);
 
   void scale(float s);
   void scale(float sx, float sy);
-
   void move(float tx, float ty);
+  void rotate(float angle);
 
-  glm::mat4 getModelMtx();
-
+  void setModelMatrix(glm::mat4 mat);
   void setTexture(Texture *texture);
-  void draw(Shader *shader);
   void setCurrentElement(int row, int column);
+
+  void draw(Shader *shader);
   void gc();
 
 private:
@@ -25,7 +24,12 @@ private:
 
   GLuint vaoId;
   GLuint vboId;
-  GLuint texture1;
+
+  float tx;
+  float ty;
+  float sx;
+  float sy;
+  float angle;
 
   int rows;
   int columns;
@@ -33,44 +37,10 @@ private:
 
   glm::mat4 model = glm::mat4(1.0f);
   //----------------------------------------------------------------------------
-  void setup() {
-    glGenVertexArrays(1, &(this->vaoId));
-    glGenBuffers(1, &(this->vboId));
-  }
+  void setup();
+  void bindVAO();
+  void upload();
 
-  void bindVAO() {
-    GLuint vaoId = this->vaoId;
-    glBindVertexArray(vaoId);
-  }
-
-  void upload() {
-    float vertices[] = {
-      0.0f, 1.0f,
-      0.0f, 0.0f,
-      1.0f, 1.0f,
-      1.0f, 0.0f,
-
-      0.0f, 1.0f,
-      0.0f, 0.0f,
-      1.0f, 1.0f,
-      1.0f, 0.0f,
-    };
-
-    const int positionLength = COMPONENTS_PER_VERTEX;
-    const int texCoordLength = COMPONENTS_PER_VERTEX_TEXTURE;
-
-    int nVertices = this->numberOfVertices;
-
-    this->bindVAO();
-    glBindBuffer(GL_ARRAY_BUFFER, this->vboId);
-
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * nVertices * positionLength * texCoordLength, &vertices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, positionLength, GL_FLOAT, GL_FALSE, positionLength * sizeof(GLfloat), (GLvoid*) (0 * sizeof(GLfloat)));
-    glEnableVertexAttribArray(0);
-
-    glVertexAttribPointer(1, texCoordLength, GL_FLOAT, GL_FALSE, texCoordLength * sizeof(GLfloat), (GLvoid*) (numberOfVertices * positionLength * sizeof(GLfloat)));
-    glEnableVertexAttribArray(1);
-  }
+  void recalculateModelMatrix();
 
 };
