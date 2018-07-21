@@ -1,6 +1,7 @@
 #include "app.hpp"
 #include "engine/Sprite.hpp"
 #include "engine/Texture.hpp"
+#include "engine/TransformAnimation.hpp"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
@@ -8,16 +9,6 @@ void processInput(GLFWwindow *window);
 // settings
 const unsigned int SCR_HEIGHT = 1024 * 2;
 const unsigned int SCR_WIDTH = SCR_HEIGHT * 16 / 9;
-
-void quadratic_bezier_curve(float px0, float py0, float px1, float py1, float px2, float py2, float t, float &pxo, float &pyo) {
-  pxo = pow(1 - t, 2) * px0 + (1 - t) * 2 * t * px1 + t * t * px2;
-  pyo = pow(1 - t, 2) * py0 + (1 - t) * 2 * t * py1 + t * t * py2;
-}
-
-void cubic_bezier_curve(float px0, float py0, float px1, float py1, float px2, float py2, float px3, float py3, float t, float &pxo, float &pyo) {
-  pxo = pow(1 - t, 3) * px0 + pow(1 - t, 2) * 3 * t * px1 + (1 - t) * 3 * t * t * px2 + t * t * t * px3;
-  pyo = pow(1 - t, 3) * py0 + pow(1 - t, 2) * 3 * t * py1 + (1 - t) * 3 * t * t * py2 + t * t * t * py3;
-}
 
 int main()
 {
@@ -73,8 +64,11 @@ int main()
 
     float width  = texture1.getWidth()  / 2.0;
     float height = texture1.getHeight() / 2.0;
-    sprite1.move((SCR_WIDTH - width) / 2.0, (SCR_HEIGHT - height) / 2.0);
+    sprite1.translate((SCR_WIDTH - width) / 2.0, (SCR_HEIGHT - height) / 2.0);
     sprite1.scale(width, height);
+
+    TransformAnimation animation(&sprite1);
+    animation.move(lastTime, 3.0f, 1600.0f, 0.0f);
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -106,6 +100,7 @@ int main()
           lastTime = currentTime;
         }
 
+        animation.update(currentTime);
         sprite1.draw(&shader);
 
         // shader.setBool("reflected", true);

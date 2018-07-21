@@ -20,7 +20,8 @@ void Sprite::scale(float sx, float sy) {
   this->recalculateModelMatrix();
 }
 
-void Sprite::move(float tx, float ty) {
+void Sprite::translate(float tx, float ty)
+{
   this->tx = tx;
   this->ty = ty;
 

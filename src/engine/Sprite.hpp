@@ -9,7 +9,7 @@ public:
 
   void scale(float s);
   void scale(float sx, float sy);
-  void move(float tx, float ty);
+  void translate(float tx, float ty);
   void rotate(float angle);
 
   void setModelMatrix(glm::mat4 mat);

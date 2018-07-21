@@ -21,8 +21,10 @@ executable('ojogo', [
   './src/main.cpp',
   './src/glad.c',
   './src/stb_image.c',
+  './src/engine/Game.cpp',
   './src/engine/Sprite.cpp',
   './src/engine/Texture.cpp',
+  './src/engine/TransformAnimation.cpp',
 ],
 	link_args: '-ldl',
 	dependencies: [
