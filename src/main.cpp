@@ -1,17 +1,18 @@
 #include "app.hpp"
 #include "engine/Sprite.hpp"
 #include "engine/Texture.hpp"
-#include "engine/TransformAnimation.hpp"
+#include "engine/Animation.hpp"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
 
 // settings
-const unsigned int SCR_HEIGHT = 1024 * 2;
+const unsigned int SCR_HEIGHT = 1024;
 const unsigned int SCR_WIDTH = SCR_HEIGHT * 16 / 9;
 
 int main()
 {
+    std::cout << "Window size: (" << SCR_WIDTH << "," << SCR_HEIGHT << ")" << std::endl;
     // glfw: initialize and configure
     // ------------------------------
     glfwInit();
@@ -46,8 +47,8 @@ int main()
 
     // build and compile our shader program
     // ------------------------------------
-    // Shader shader("../shaders/simple.vert", "../shaders/simple.frag");
-    Shader shader("../shaders/simple.vert", "../shaders/reflection.frag");
+    Shader shader("./shaders/simple.vert", "./shaders/simple.frag");
+    // Shader shader("./shaders/simple.vert", "./shaders/reflection.frag");
     shader.use();
 
     // glm::mat4 projection(1.0f);
@@ -58,23 +59,30 @@ int main()
 
     float lastTime = (float)glfwGetTime();
     Texture texture1;
-    texture1.load("../texturas/goku.png");
+    texture1.load("./texturas/goku.png");
     // texture1.load("./texturas/sprite.png");
     Sprite sprite1(2, 4, &texture1);
 
-    float width  = texture1.getWidth()  / 2.0;
-    float height = texture1.getHeight() / 2.0;
-    sprite1.translate((SCR_WIDTH - width) / 2.0, (SCR_HEIGHT - height) / 2.0);
+    float width  = texture1.getWidth()  / 8.0;
+    float height = texture1.getHeight() / 8.0;
+    // sprite1.translate((SCR_WIDTH - width) / 2.0, (SCR_HEIGHT - height) / 2.0);
+    sprite1.translate(100.0f, (SCR_HEIGHT - height) / 2.0);
     sprite1.scale(width, height);
 
-    TransformAnimation animation(&sprite1);
-    animation.move(lastTime, 3.0f, 1600.0f, 0.0f);
+    Animation animation(&sprite1);
+    // animation.move(lastTime, 10.0f, 800.0f, 0.0f);
+
+    // glm::mat4 matmodel(1.0);
+    animation.setup(lastTime, 2.0f, 
+        [&sprite1, width, height](glm::vec3 startLocation, glm::vec3 startScale, float startAngle, float percent) {
+
+        // static float dx = 1000.0f;
+        sprite1.translate((SCR_WIDTH - width) / 2.0 * percent, (SCR_HEIGHT - height) / 2.0 * percent);
+        sprite1.scale(width * percent, height * percent);
+    });
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    // sprite1.move(time, 5.0f, 1000.0, 100.0f);
-
-    int i=0, j=0;
 
     // render loop
     // -----------
@@ -92,19 +100,8 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT);
         float currentTime = (float)glfwGetTime();
 
-        if(currentTime - lastTime > 0.15) {
-          i++;j++;
-          if(i >= 2) i =0;
-          if(j >= 4) j =0;
-          // sprite1.setCurrentElement(i, j);
-          lastTime = currentTime;
-        }
-
         animation.update(currentTime);
         sprite1.draw(&shader);
-
-        // shader.setBool("reflected", true);
-        // sprite2.draw(&shader);
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
@@ -118,11 +115,6 @@ int main()
     }
 
     sprite1.gc();
-
-    // optional: de-allocate all resources once they've outlived their purpose:
-    // ------------------------------------------------------------------------
-    // glDeleteVertexArrays(1, &VAO);
-    // glDeleteBuffers(1, &VBO);
 
     // glfw: terminate, clearing all previously allocated GLFW resources.
     // ------------------------------------------------------------------

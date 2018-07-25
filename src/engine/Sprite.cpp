@@ -14,16 +14,15 @@ void Sprite::scale(float s) {
 }
 
 void Sprite::scale(float sx, float sy) {
-  this->sx = sx;
-  this->sy = sy;
+  this->mScale.x = sx;
+  this->mScale.y = sy;
 
   this->recalculateModelMatrix();
 }
 
-void Sprite::translate(float tx, float ty)
-{
-  this->tx = tx;
-  this->ty = ty;
+void Sprite::translate(float tx, float ty) {
+  this->mTranslate.x = tx;
+  this->mTranslate.y = ty;
 
   this->recalculateModelMatrix();
 }
@@ -36,6 +35,18 @@ void Sprite::rotate(float angle) {
 
 void Sprite::setModelMatrix(glm::mat4 mat) {
   this->model = mat;
+}
+
+glm::vec3 Sprite::getTranslateVec() {
+  return this->mTranslate;
+}
+
+glm::vec3 Sprite::getScaleVec() {
+  return this->mScale;
+}
+
+float Sprite::getRotation() {
+  return this->angle;
 }
 
 void Sprite::setTexture(Texture *texture) {
@@ -131,8 +142,8 @@ void Sprite::upload()
 void Sprite::recalculateModelMatrix() {
   glm::mat4 mat(1.0);
 
-  mat = glm::translate(mat, glm::vec3(this->tx, this->ty, 0.0f));
-  mat = glm::scale(mat, glm::vec3(this->sx, this->sy, 1.0f));
+  mat = glm::translate(mat, glm::vec3(this->mTranslate.x, this->mTranslate.y, 0.0f));
+  mat = glm::scale(mat, glm::vec3(this->mScale.x, this->mScale.y, 1.0f));
   mat = glm::rotate(mat, this->angle, glm::vec3(0.0f, 0.0f, 1.0f));
 
   this->model = mat;

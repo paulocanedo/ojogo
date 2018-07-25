@@ -16,6 +16,10 @@ public:
   void setTexture(Texture *texture);
   void setCurrentElement(int row, int column);
 
+  glm::vec3 getTranslateVec();
+  glm::vec3 getScaleVec();
+  float getRotation();
+
   void draw(Shader *shader);
   void gc();
 
@@ -25,10 +29,8 @@ private:
   GLuint vaoId;
   GLuint vboId;
 
-  float tx;
-  float ty;
-  float sx;
-  float sy;
+  glm::vec3 mTranslate;
+  glm::vec3 mScale;
   float angle;
 
   int rows;
