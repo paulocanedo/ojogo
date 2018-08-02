@@ -8,6 +8,7 @@
 class Sprite
 {
 public:
+  //TODO adicionar opcao para informar as coordenadas iniciais do sprite
   Sprite(int rows = 1, int columns = 1, Texture *texture = nullptr);
 
   void scale(float s);

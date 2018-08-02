@@ -67,16 +67,16 @@ int main()
     Texture texBackground;
     // texture1.load("./texturas/numeros.png");
     texture1.load("./texturas/goku.png");
-    texture2.load("./texturas/awesomeface.png");
+    texture2.load("./texturas/sprite.png");
     texBackground.load("./texturas/background.jpg");
     // texture1.load("./texturas/sprite.png");
     // Sprite sprite1(2, 4, &texture1);
     sprite1 = new Sprite(1,1,&texture1);
     // sprite1->setTexture(&texture1);
-    Sprite sprite2(1, 1, &texture2);
-    Sprite spriteBrackground(1, 1, &texBackground);
+    Sprite spriteBackground(1, 1, &texBackground);
+    Sprite sprite2(2, 4, &texture2);
 
-        float width = texture1.getWidth() / 4.0f;
+    float width = texture1.getWidth() / 4.0f;
     float height = texture1.getHeight() / 4.0f;
     glm::vec2 pos0((SCR_WIDTH - width) / 2.0, (SCR_HEIGHT - height) / 2.0);
     // sprite1.translate((SCR_WIDTH - width) / 2.0, (SCR_HEIGHT - height) / 2.0);
@@ -84,11 +84,8 @@ int main()
     sprite1->scale(width, height);
 
     sprite2.translate(pos0.x, pos0.y);
-    sprite2.scale(texture2.getWidth(), texture2.getHeight());
-
-    spriteBrackground.translate(0,0);
-    spriteBrackground.scale(SCR_WIDTH, SCR_HEIGHT);
-    // sprite1.setCurrentElement(0, 0);
+    sprite2.scale(texture2.getWidth() / 4.0f, texture2.getHeight() / 2.0f);
+    sprite2.nextFrame();
 
     float time0 = -1;
 
@@ -104,23 +101,65 @@ int main()
             this->startLocation = sprite->getTranslateVec();
         }
 
-        bool update(float currentTime) {
+        virtual bool update(float currentTime) {
             if(startTimeUpdate == -1.0f) {
                 startTimeUpdate = currentTime;
             }
             float ellapsedTime = currentTime - startTimeUpdate;
 
-            float x = this->startLocation.x + (ellapsedTime * 100.0f);
+            float x = this->startLocation.x + (ellapsedTime * 1000.0f);
             float y = this->startLocation.y;
             sprite->translate(x, y);
 
-            // return true;
-            return (this->startLocation.x + (ellapsedTime * 100.0f)) < 1600.0f;
-            // return ellapsedTime < 3.0f;
+            // return true; //->animacao infinita
+            // return (this->startLocation.x + (ellapsedTime * 100.0f)) < 1600.0f;
+            return ellapsedTime < 1.0f;
         };
 
-    } obj(sprite1);
-    sprite1->animation = &obj;
+    } anim1(sprite1);
+    sprite1->animation = &anim1;
+
+    class B : public Animation
+    {
+      private:
+        Sprite *sprite;
+        glm::vec3 startLocation;
+        float startTimeUpdate = -1.0f;
+
+      public:
+        B(Sprite *sprite)
+        {
+            this->sprite = sprite;
+            this->startLocation = sprite->getTranslateVec();
+        }
+
+        virtual bool update(float currentTime)
+        {
+            if (startTimeUpdate == -1.0f)
+            {
+                startTimeUpdate = currentTime;
+            }
+            float ellapsedTime = currentTime - startTimeUpdate;
+
+            float x = this->startLocation.x + (ellapsedTime * 50.0f);
+            float y = this->startLocation.y;
+            // sprite->translate(x, y);
+            if(ellapsedTime > 0.05f) {
+                startTimeUpdate = currentTime;
+                sprite->nextFrame();
+            }
+
+            return true; //->animacao infinita
+            // return (this->startLocation.x + (ellapsedTime * 100.0f)) < 1600.0f;
+            // return ellapsedTime < 1.0f;
+        };
+
+    } anim2(&sprite2);
+
+    sprite2.animation = &anim2;
+
+    // spriteBrackground.translate(0, 0);
+    // spriteBrackground.scale(SCR_WIDTH, SCR_HEIGHT);
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -141,15 +180,15 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT);
         float currentTime = (float)glfwGetTime();
 
-        spriteBrackground.update(currentTime);
-        spriteBrackground.draw(&shader);
+        // spriteBrackground.update(currentTime);
+        // spriteBrackground.draw(&shader);
 
         // animation.update(currentTime);
         sprite1->update(currentTime);
         sprite1->draw(&shader);
 
-        // sprite2.update(currentTime);
-        // sprite2.draw(&shader);
+        sprite2.update(currentTime);
+        sprite2.draw(&shader);
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
