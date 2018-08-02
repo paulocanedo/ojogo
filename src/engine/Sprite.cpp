@@ -1,6 +1,7 @@
 #include "Sprite.hpp"
 
-Sprite::Sprite(int rows, int columns, Texture *texture) {
+Sprite::Sprite(int rows, int columns, Texture *texture)
+{
   this->rows = rows;
   this->columns = columns;
 
@@ -57,6 +58,8 @@ void Sprite::setCurrentElement(int currentRow, int currentColumn) {
   float rows = this->rows;
   float columns = this->columns;
 
+  currentRow = (this->rows - 1) - currentRow;
+
   float texCoords[] = {
     currentColumn / columns,       (currentRow + 1) / rows, //left top
     currentColumn / columns,       currentRow / rows,       //left bottom
@@ -68,6 +71,15 @@ void Sprite::setCurrentElement(int currentRow, int currentColumn) {
 
   int nVertices = this->numberOfVertices;
   glBufferSubData(GL_ARRAY_BUFFER, sizeof(float) * nVertices * COMPONENTS_PER_VERTEX, sizeof(float) * nVertices * COMPONENTS_PER_VERTEX_TEXTURE, &texCoords);
+}
+
+void Sprite::update(float currentTime) {
+  if(this->animation != nullptr) {
+    bool shouldContinue = this->animation->update(currentTime);
+    if(!shouldContinue) {
+      this->animation = nullptr;
+    }
+  }
 }
 
 void Sprite::draw(Shader *shader = nullptr) {
@@ -147,4 +159,20 @@ void Sprite::recalculateModelMatrix() {
   mat = glm::rotate(mat, this->angle, glm::vec3(0.0f, 0.0f, 1.0f));
 
   this->model = mat;
+}
+
+void Sprite::nextFrame() {
+  int i=0, j=0;
+  this->currentFrame++;
+  if(this->currentFrame >= this->rows * this->columns) {
+    this->currentFrame = 0;
+  } else {
+    if (this->currentFrame >= this->columns)
+    {
+      i = (int)(this->currentFrame / this->columns);
+    }
+    j = this->currentFrame % this->columns;
+  }
+
+  this->setCurrentElement(i, j);
 }

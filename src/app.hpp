@@ -5,6 +5,8 @@
 #include <string>
 #include <fstream>
 #include <sstream>
+#include <functional>
+#include <vector>
 
 #include "Shader.hpp"
 #include "stb_image.h"
