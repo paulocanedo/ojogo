@@ -109,7 +109,37 @@ int main()
         };
 
     } anim1(&sprite1);
-    sprite1.animation = &anim1;
+
+    class A1 : public Animation {
+        private:
+        Sprite *sprite;
+        glm::vec3 startLocation;
+        float startTimeUpdate = -1.0f;
+
+        public:
+        A1(Sprite *sprite) {
+            this->sprite = sprite;
+        }
+
+        virtual bool update(float currentTime) {
+            if(startTimeUpdate == -1.0f) {
+                startTimeUpdate = currentTime;
+                startLocation = sprite->getTranslateVec();
+
+                // std::cout << "(" << startTimeUpdate << ")" << std::endl;
+            }
+            float ellapsedTime = currentTime - startTimeUpdate;
+
+            float x = this->startLocation.x - (ellapsedTime * 1000.0f);
+            float y = this->startLocation.y;
+            sprite->translate(x, y);
+
+            // return true; //->animacao infinita
+            // return (this->startLocation.x + (ellapsedTime * 100.0f)) < 1600.0f;
+            return ellapsedTime < 1.75f;
+        };
+
+    } anim1a(&sprite1);
 
     class B : public Animation
     {
@@ -147,7 +177,9 @@ int main()
 
     } anim2(&sprite2);
 
-    sprite2.animation = &anim2;
+    sprite1.animations.push_back(&anim1);
+    sprite1.animations.push_back(&anim1a);
+    sprite2.animations.push_back(&anim2);
 
     spriteBackground.translate(0, 0);
     spriteBackground.scale(SCR_WIDTH, SCR_HEIGHT);
@@ -175,8 +207,8 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT);
         float currentTime = (float)glfwGetTime();
 
-        spriteBackground.update(currentTime);
-        spriteBackground.draw(&shader);
+        // spriteBackground.update(currentTime);
+        // spriteBackground.draw(&shader);
 
         sprite1.update(currentTime);
         sprite1.draw(&shader);

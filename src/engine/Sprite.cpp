@@ -76,10 +76,15 @@ void Sprite::update(float currentTime) {
     this->setup();
   }
 
-  if(this->animation != nullptr) {
-    bool shouldContinue = this->animation->update(currentTime);
+  if(this->currentAnimation != nullptr) {
+    bool shouldContinue = this->currentAnimation->update(currentTime);
     if(!shouldContinue) {
-      this->animation = nullptr;
+      this->animations.erase(this->animations.begin());
+      this->currentAnimation = nullptr;
+    }
+  } else {
+    if (!this->animations.empty()) {
+      this->currentAnimation = this->animations.front();
     }
   }
 }

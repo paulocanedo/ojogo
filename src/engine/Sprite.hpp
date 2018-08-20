@@ -29,7 +29,7 @@ public:
   void draw(Shader *shader);
   void gc();
 
-  Animation *animation = nullptr;
+  std::vector<Animation *> animations;
 
 private:
   const int numberOfVertices = 4;
@@ -46,7 +46,7 @@ private:
   int rows;
   int columns;
   Texture *texture = nullptr;
-  std::vector<Animation> animations;
+  Animation* currentAnimation = nullptr;
 
   glm::mat4 model = glm::mat4(1.0f);
   //----------------------------------------------------------------------------
