@@ -6,6 +6,8 @@
 class Animation
 {
 public:
+    Animation() {}
+    virtual ~Animation() {}
     virtual bool update(float currentTime) = 0;
 };
 

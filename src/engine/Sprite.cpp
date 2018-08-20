@@ -1,13 +1,7 @@
 #include "Sprite.hpp"
 
-Sprite::Sprite(int rows, int columns, Texture *texture)
+Sprite::Sprite()
 {
-  this->rows = rows;
-  this->columns = columns;
-
-  this->setup();
-  this->upload();
-  this->setTexture(texture);
 }
 
 void Sprite::scale(float s) {
@@ -18,20 +12,22 @@ void Sprite::scale(float sx, float sy) {
   this->mScale.x = sx;
   this->mScale.y = sy;
 
-  this->recalculateModelMatrix();
+  this->model = this->calculateModelMatrix(this->mTranslate.x, this->mTranslate.y, sx, sy, this->angle);
 }
 
 void Sprite::translate(float tx, float ty) {
   this->mTranslate.x = tx;
   this->mTranslate.y = ty;
 
-  this->recalculateModelMatrix();
+  this->model = this->calculateModelMatrix(tx, ty, this->mScale.x, this->mScale.y, this->angle);
 }
 
 void Sprite::rotate(float angle) {
   this->angle = angle;
 
-  this->recalculateModelMatrix();
+  this->model = this->calculateModelMatrix(this->mTranslate.x, this->mTranslate.y,
+                                           this->mScale.x, this->mScale.y,
+                                           angle);
 }
 
 void Sprite::setModelMatrix(glm::mat4 mat) {
@@ -50,8 +46,10 @@ float Sprite::getRotation() {
   return this->angle;
 }
 
-void Sprite::setTexture(Texture *texture) {
+void Sprite::setTexture(Texture *texture, int rows, int columns) {
   this->texture = texture;
+  this->rows = rows;
+  this->columns = columns;
 }
 
 void Sprite::setCurrentElement(int currentRow, int currentColumn) {
@@ -74,6 +72,10 @@ void Sprite::setCurrentElement(int currentRow, int currentColumn) {
 }
 
 void Sprite::update(float currentTime) {
+  if(!this->initialized) {
+    this->setup();
+  }
+
   if(this->animation != nullptr) {
     bool shouldContinue = this->animation->update(currentTime);
     if(!shouldContinue) {
@@ -83,6 +85,8 @@ void Sprite::update(float currentTime) {
 }
 
 void Sprite::draw(Shader *shader = nullptr) {
+  if(!this->canDraw()) return;
+
   int nVertices = this->numberOfVertices;
 
   this->bindVAO();
@@ -112,6 +116,13 @@ void Sprite::setup()
 {
   glGenVertexArrays(1, &(this->vaoId));
   glGenBuffers(1, &(this->vboId));
+
+  this->upload();
+  this->initialized = true;
+
+  if(this->rows > 1 || this->columns > 1) {
+    this->nextFrame();
+  }
 }
 
 void Sprite::bindVAO()
@@ -151,14 +162,14 @@ void Sprite::upload()
   glEnableVertexAttribArray(1);
 }
 
-void Sprite::recalculateModelMatrix() {
+glm::mat4 Sprite::calculateModelMatrix(float tx, float ty, float sx, float sy, float angle) {
   glm::mat4 mat(1.0);
 
-  mat = glm::translate(mat, glm::vec3(this->mTranslate.x, this->mTranslate.y, 0.0f));
-  mat = glm::scale(mat, glm::vec3(this->mScale.x, this->mScale.y, 1.0f));
-  mat = glm::rotate(mat, this->angle, glm::vec3(0.0f, 0.0f, 1.0f));
+  mat = glm::translate(mat, glm::vec3(tx, ty, 0.0f));
+  mat = glm::scale(mat, glm::vec3(sx, sy, 1.0f));
+  mat = glm::rotate(mat, angle, glm::vec3(0.0f, 0.0f, 1.0f));
 
-  this->model = mat;
+  return mat;
 }
 
 void Sprite::nextFrame() {
@@ -175,4 +186,8 @@ void Sprite::nextFrame() {
   }
 
   this->setCurrentElement(i, j);
+}
+
+bool Sprite::canDraw() {
+  return (this->vaoId >= 0 && this->vboId >= 0);
 }

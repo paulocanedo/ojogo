@@ -11,7 +11,7 @@ const unsigned int SCR_HEIGHT = 1024;
 const unsigned int SCR_WIDTH = SCR_HEIGHT * 16 / 9;
 
 glm::vec2 posPrincipal(0.0f, 0.0f);
-Sprite *sprite1;
+Sprite sprite1;
 
 int main()
 {
@@ -60,34 +60,26 @@ int main()
     glm::mat4 projection = glm::ortho(0.0f, (float)SCR_WIDTH, 0.0f, (float)SCR_HEIGHT, -1.0f, 1.0f);
     shader.setMat4("projection", projection);
 
-
-    float lastTime = (float)glfwGetTime();
     Texture texture1;
     Texture texture2;
     Texture texBackground;
-    // texture1.load("./texturas/numeros.png");
+    texture1.load("./texturas/numeros.png");
     texture1.load("./texturas/goku.png");
     texture2.load("./texturas/sprite.png");
     texBackground.load("./texturas/background.jpg");
-    // texture1.load("./texturas/sprite.png");
-    // Sprite sprite1(2, 4, &texture1);
-    sprite1 = new Sprite(1,1,&texture1);
-    // sprite1->setTexture(&texture1);
-    Sprite spriteBackground(1, 1, &texBackground);
-    Sprite sprite2(2, 4, &texture2);
+
+    Sprite spriteBackground;
+    Sprite sprite2;
 
     float width = texture1.getWidth() / 4.0f;
     float height = texture1.getHeight() / 4.0f;
     glm::vec2 pos0((SCR_WIDTH - width) / 2.0, (SCR_HEIGHT - height) / 2.0);
-    // sprite1.translate((SCR_WIDTH - width) / 2.0, (SCR_HEIGHT - height) / 2.0);
-    sprite1->translate(pos0.x, pos0.y);
-    sprite1->scale(width, height);
+
+    sprite1.translate(pos0.x, pos0.y);
+    sprite1.scale(width, height);
 
     sprite2.translate(pos0.x, pos0.y);
     sprite2.scale(texture2.getWidth() / 4.0f, texture2.getHeight() / 2.0f);
-    sprite2.nextFrame();
-
-    float time0 = -1;
 
     class A : public Animation {
         private:
@@ -116,8 +108,8 @@ int main()
             return ellapsedTime < 1.0f;
         };
 
-    } anim1(sprite1);
-    sprite1->animation = &anim1;
+    } anim1(&sprite1);
+    sprite1.animation = &anim1;
 
     class B : public Animation
     {
@@ -141,9 +133,8 @@ int main()
             }
             float ellapsedTime = currentTime - startTimeUpdate;
 
-            float x = this->startLocation.x + (ellapsedTime * 50.0f);
-            float y = this->startLocation.y;
-            // sprite->translate(x, y);
+
+            // float x = this->startLocation.x + (ellapsedTime * 50.0f);
             if(ellapsedTime > 0.05f) {
                 startTimeUpdate = currentTime;
                 sprite->nextFrame();
@@ -158,11 +149,15 @@ int main()
 
     sprite2.animation = &anim2;
 
-    // spriteBrackground.translate(0, 0);
-    // spriteBrackground.scale(SCR_WIDTH, SCR_HEIGHT);
+    spriteBackground.translate(0, 0);
+    spriteBackground.scale(SCR_WIDTH, SCR_HEIGHT);
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    sprite1.setTexture(&texture1);
+    sprite2.setTexture(&texture2, 2, 4);
+    spriteBackground.setTexture(&texBackground);
 
     // render loop
     // -----------
@@ -180,12 +175,11 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT);
         float currentTime = (float)glfwGetTime();
 
-        // spriteBrackground.update(currentTime);
-        // spriteBrackground.draw(&shader);
+        spriteBackground.update(currentTime);
+        spriteBackground.draw(&shader);
 
-        // animation.update(currentTime);
-        sprite1->update(currentTime);
-        sprite1->draw(&shader);
+        sprite1.update(currentTime);
+        sprite1.draw(&shader);
 
         sprite2.update(currentTime);
         sprite2.draw(&shader);
@@ -197,13 +191,16 @@ int main()
 
         GLenum error = glGetError();
         if(error != 0) {
-          std::cout << "erro no opengl" << '\n';;
+          std::cout << "erro no opengl: " << error << std::endl;
         }
     }
 
-    sprite1->gc();
-
-    delete sprite1;
+    sprite1.gc();
+    sprite2.gc();
+    // spriteBackground.gc();
+    texture1.free();
+    texture2.free();
+    texBackground.free();
 
     // glfw: terminate, clearing all previously allocated GLFW resources.
     // ------------------------------------------------------------------
@@ -217,22 +214,6 @@ void processInput(GLFWwindow *window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
-
-    float distance = 500.0f;
-    static bool movimentado = false;
-
-    if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
-        if(!movimentado) {
-            glm::vec3 pos = sprite1->getTranslateVec();
-            sprite1->translate(pos.x + distance, pos.y);
-            movimentado = true;
-        }
-    }
-
-    if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
-        glm::vec3 pos = sprite1->getTranslateVec();
-        sprite1->translate(pos.x - distance, pos.y);
-    }
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes

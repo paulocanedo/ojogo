@@ -8,8 +8,7 @@
 class Sprite
 {
 public:
-  //TODO adicionar opcao para informar as coordenadas iniciais do sprite
-  Sprite(int rows = 1, int columns = 1, Texture *texture = nullptr);
+  Sprite();
 
   void scale(float s);
   void scale(float sx, float sy);
@@ -17,7 +16,7 @@ public:
   void rotate(float angle);
 
   void setModelMatrix(glm::mat4 mat);
-  void setTexture(Texture *texture);
+  void setTexture(Texture *texture, int rows = 1, int columns = 1);
   void setCurrentElement(int row, int column);
   void nextFrame();
 
@@ -25,6 +24,7 @@ public:
   glm::vec3 getScaleVec();
   float getRotation();
 
+  void setup();
   void update(float currentTime);
   void draw(Shader *shader);
   void gc();
@@ -41,20 +41,22 @@ private:
   glm::vec3 mScale;
   float angle;
 
+  bool initialized = false;
   int currentFrame = 0;
   int rows;
   int columns;
-  Texture *texture;
+  Texture *texture = nullptr;
   std::vector<Animation> animations;
 
   glm::mat4 model = glm::mat4(1.0f);
   //----------------------------------------------------------------------------
-  void setup();
   void bindVAO();
   void upload();
 
-  void recalculateModelMatrix();
+  bool canDraw();
 
-};
+  glm::mat4 calculateModelMatrix(float tx, float ty, float sx, float sy, float angle);
+
+  };
 
 #endif
