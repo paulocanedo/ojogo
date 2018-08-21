@@ -1,0 +1,30 @@
+project('ojogo', ['cpp', 'c'],        version: '0.1.0',
+  meson_version: '>= 0.40.0',
+  default_options : ['cpp_std=c++14']
+)
+
+
+gl_dep = dependency('appleframeworks', modules : ['OpenGL'], required : false)
+if not gl_dep.found()
+  error('OpenGL framework not found')
+endif
+
+
+add_project_arguments([
+  '-I' + meson.build_root()
+], language: 'cpp')
+
+subdir('src')
+
+executable('ojogo', [
+  './src/main.cpp',
+  './src/glad.c',
+  './src/stb_image.c',
+  './src/engine/Game.cpp',
+  './src/engine/Sprite.cpp',
+  './src/engine/Texture.cpp',
+],
+	link_args: '-lglfw',
+	dependencies: [
+		 gl_dep
+	])
