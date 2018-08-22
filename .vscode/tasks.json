@@ -4,9 +4,9 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Ninja Build & Run",
+            "label": "Ninja Build",
             "type": "shell",
-            "command": "ninja -C ./build && ./build/ojogo",
+            "command": "clear && ninja -C ${workspaceFolder}/build",
             "group": {
                 "kind": "build",
                 "isDefault": true
