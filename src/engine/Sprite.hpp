@@ -9,6 +9,7 @@ class Sprite
 {
 public:
   Sprite();
+  virtual ~Sprite();
 
   void scale(float s);
   void scale(float sx, float sy);
@@ -24,6 +25,7 @@ public:
   glm::vec3 getScaleVec();
   float getRotation();
 
+  virtual void customSetup()  { std::cout << "Sprite::customSetup" << std::endl; }
   void setup();
   void update(float currentTime);
   void draw(Shader *shader);
@@ -57,6 +59,6 @@ private:
 
   glm::mat4 calculateModelMatrix(float tx, float ty, float sx, float sy, float angle);
 
-  };
+};
 
 #endif

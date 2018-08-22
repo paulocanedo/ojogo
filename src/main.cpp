@@ -1,10 +1,26 @@
 #include "app.hpp"
 #include "engine/Sprite.hpp"
 #include "engine/Texture.hpp"
+
+#include "samples/Goku.hpp"
+#include "engine/animation/AnimationMultiTexture.hpp"
+#include "engine/animation/AnimationTranslate.hpp"
 // #include "engine/Animation.hpp"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
+
+int MoveToFunction(const FT_Vector *to,
+                          void *user);
+int LineToFunction(const FT_Vector *to,
+                          void *user);
+int ConicToFunction(const FT_Vector *control,
+                           const FT_Vector *to,
+                           void *user);
+int CubicToFunction(const FT_Vector *controlOne,
+                           const FT_Vector *controlTwo,
+                           const FT_Vector *to,
+                           void *user);
 
 // settings
 const unsigned int SCR_HEIGHT = 1024;
@@ -63,7 +79,7 @@ int main()
     Texture texture1;
     Texture texture2;
     Texture texBackground;
-    texture1.load("./texturas/numeros.png");
+    // texture1.load("./texturas/numeros.png");
     texture1.load("./texturas/goku.png");
     texture2.load("./texturas/sprite.png");
     texBackground.load("./texturas/background.jpg");
@@ -81,105 +97,11 @@ int main()
     sprite2.translate(pos0.x, pos0.y);
     sprite2.scale(texture2.getWidth() / 4.0f, texture2.getHeight() / 2.0f);
 
-    class A : public Animation {
-        private:
-        Sprite *sprite;
-        glm::vec3 startLocation;
-        float startTimeUpdate = -1.0f;
+    AnimationTranslate at(&sprite1);
+    sprite1.animations.push_back(&at);
 
-        public:
-        A(Sprite *sprite) {
-            this->sprite = sprite;
-            this->startLocation = sprite->getTranslateVec();
-        }
-
-        virtual bool update(float currentTime) {
-            if(startTimeUpdate == -1.0f) {
-                startTimeUpdate = currentTime;
-            }
-            float ellapsedTime = currentTime - startTimeUpdate;
-
-            float x = this->startLocation.x + (ellapsedTime * 1000.0f);
-            float y = this->startLocation.y;
-            sprite->translate(x, y);
-
-            // return true; //->animacao infinita
-            // return (this->startLocation.x + (ellapsedTime * 100.0f)) < 1600.0f;
-            return ellapsedTime < 1.0f;
-        };
-
-    } anim1(&sprite1);
-
-    class A1 : public Animation {
-        private:
-        Sprite *sprite;
-        glm::vec3 startLocation;
-        float startTimeUpdate = -1.0f;
-
-        public:
-        A1(Sprite *sprite) {
-            this->sprite = sprite;
-        }
-
-        virtual bool update(float currentTime) {
-            if(startTimeUpdate == -1.0f) {
-                startTimeUpdate = currentTime;
-                startLocation = sprite->getTranslateVec();
-
-                // std::cout << "(" << startTimeUpdate << ")" << std::endl;
-            }
-            float ellapsedTime = currentTime - startTimeUpdate;
-
-            float x = this->startLocation.x - (ellapsedTime * 1000.0f);
-            float y = this->startLocation.y;
-            sprite->translate(x, y);
-
-            // return true; //->animacao infinita
-            // return (this->startLocation.x + (ellapsedTime * 100.0f)) < 1600.0f;
-            return ellapsedTime < 1.75f;
-        };
-
-    } anim1a(&sprite1);
-
-    class B : public Animation
-    {
-      private:
-        Sprite *sprite;
-        glm::vec3 startLocation;
-        float startTimeUpdate = -1.0f;
-
-      public:
-        B(Sprite *sprite)
-        {
-            this->sprite = sprite;
-            this->startLocation = sprite->getTranslateVec();
-        }
-
-        virtual bool update(float currentTime)
-        {
-            if (startTimeUpdate == -1.0f)
-            {
-                startTimeUpdate = currentTime;
-            }
-            float ellapsedTime = currentTime - startTimeUpdate;
-
-
-            // float x = this->startLocation.x + (ellapsedTime * 50.0f);
-            if(ellapsedTime > 0.05f) {
-                startTimeUpdate = currentTime;
-                sprite->nextFrame();
-            }
-
-            return true; //->animacao infinita
-            // return (this->startLocation.x + (ellapsedTime * 100.0f)) < 1600.0f;
-            // return ellapsedTime < 1.0f;
-        };
-
-    } anim2(&sprite2);
-
-    sprite1.animations.push_back(&anim1);
-    sprite1.animations.push_back(&anim1a);
-    sprite2.animations.push_back(&anim2);
+    AnimationMultiTexture amt(&sprite2);
+    sprite2.animations.push_back(&amt);
 
     spriteBackground.translate(0, 0);
     spriteBackground.scale(SCR_WIDTH, SCR_HEIGHT);
@@ -190,6 +112,49 @@ int main()
     sprite1.setTexture(&texture1);
     sprite2.setTexture(&texture2, 2, 4);
     spriteBackground.setTexture(&texBackground);
+
+    //experimental render text
+    FT_Library m_ftLibrary;
+    FT_Error error = FT_Init_FreeType(&m_ftLibrary);
+    if(error) {
+        std::cerr << "falha ao carregar freetype lib" << std::endl;
+        return 2;
+    }
+
+    FT_Face m_ftFace;
+    error = FT_New_Face(m_ftLibrary, "/home/paulocanedo/Downloads/LucidaSansRegular.ttf", 0, &m_ftFace);
+    if(error) {
+        std::cerr << "falha ao carregar fonte..." << std::endl;
+        return 3;
+    }
+
+    FT_ULong code = 'P';
+    FT_UInt index = FT_Get_Char_Index(m_ftFace, code);
+
+    error = FT_Load_Glyph(m_ftFace,
+                          index,
+                          FT_LOAD_NO_SCALE | FT_LOAD_NO_BITMAP);
+
+    if (error) {
+        std::cerr << "falha ao carregar glyph..." << std::endl;
+        return 3;
+    }
+
+    FT_Outline_Funcs callbacks;
+    callbacks.move_to = MoveToFunction;
+    callbacks.line_to = LineToFunction;
+    callbacks.conic_to = ConicToFunction;
+    callbacks.cubic_to = CubicToFunction;
+
+    callbacks.shift = 0;
+    callbacks.delta = 0;
+
+    FT_GlyphSlot slot = m_ftFace->glyph;
+    FT_Outline &outline = slot->outline;
+
+    error = FT_Outline_Decompose(&outline, &callbacks, NULL);
+    //render text
+
 
     // render loop
     // -----------
@@ -234,6 +199,8 @@ int main()
     texture2.free();
     texBackground.free();
 
+    FT_Done_FreeType(m_ftLibrary);
+
     // glfw: terminate, clearing all previously allocated GLFW resources.
     // ------------------------------------------------------------------
     glfwTerminate();
@@ -255,4 +222,25 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     // make sure the viewport matches the new window dimensions; note that width and
     // height will be significantly larger than specified on retina displays.
     glViewport(0, 0, width, height);
+}
+
+int MoveToFunction(const FT_Vector *to, void *user) {
+    std::cout << "moveTo: " << to->x << "," << to->y << std::endl;
+    return 0;
+}
+
+int LineToFunction(const FT_Vector *to, void *user) {
+    return 0;
+}
+
+int ConicToFunction(const FT_Vector *control, const FT_Vector *to, void *user) {
+    return 0;
+}
+
+int CubicToFunction(const FT_Vector *controlOne,
+                           const FT_Vector *controlTwo,
+                           const FT_Vector *to,
+                           void *user) {
+
+return 0;
 }

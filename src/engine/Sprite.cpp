@@ -4,6 +4,10 @@ Sprite::Sprite()
 {
 }
 
+Sprite::~Sprite() {
+
+}
+
 void Sprite::scale(float s) {
   this->scale(s, s);
 }
@@ -77,7 +81,9 @@ void Sprite::update(float currentTime) {
   }
 
   if(this->currentAnimation != nullptr) {
-    bool shouldContinue = this->currentAnimation->update(currentTime);
+    Animation *animation = this->currentAnimation;
+    bool shouldContinue = animation->update(currentTime);
+
     if(!shouldContinue) {
       this->animations.erase(this->animations.begin());
       this->currentAnimation = nullptr;
@@ -128,6 +134,8 @@ void Sprite::setup()
   if(this->rows > 1 || this->columns > 1) {
     this->nextFrame();
   }
+
+  this->customSetup();
 }
 
 void Sprite::bindVAO()
