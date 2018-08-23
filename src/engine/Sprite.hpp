@@ -1,9 +1,10 @@
-#ifndef __SPRITE__
-#define __SPRITE__
+#pragma once
 
+#include "Animation.hpp"
 #include "../app.hpp"
 #include "Texture.hpp"
-#include "Animation.hpp"
+
+class Animation;
 
 class Sprite
 {
@@ -31,7 +32,7 @@ public:
   void draw(Shader *shader);
   void gc();
 
-  std::vector<Animation *> animations;
+  std::vector<Animation*> animations;
 
 private:
   const int numberOfVertices = 4;
@@ -60,5 +61,3 @@ private:
   glm::mat4 calculateModelMatrix(float tx, float ty, float sx, float sy, float angle);
 
 };
-
-#endif

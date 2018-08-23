@@ -82,7 +82,7 @@ void Sprite::update(float currentTime) {
 
   if(this->currentAnimation != nullptr) {
     Animation *animation = this->currentAnimation;
-    bool shouldContinue = animation->update(currentTime);
+    bool shouldContinue = animation->update(this, currentTime);
 
     if(!shouldContinue) {
       this->animations.erase(this->animations.begin());

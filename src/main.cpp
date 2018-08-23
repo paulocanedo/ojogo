@@ -1,11 +1,8 @@
 #include "app.hpp"
 #include "engine/Sprite.hpp"
-#include "engine/Texture.hpp"
 
-#include "samples/Goku.hpp"
 #include "engine/animation/AnimationMultiTexture.hpp"
 #include "engine/animation/AnimationTranslate.hpp"
-// #include "engine/Animation.hpp"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
@@ -97,10 +94,10 @@ int main()
     sprite2.translate(pos0.x, pos0.y);
     sprite2.scale(texture2.getWidth() / 4.0f, texture2.getHeight() / 2.0f);
 
-    AnimationTranslate at(&sprite1);
+    AnimationTranslate at;
     sprite1.animations.push_back(&at);
 
-    AnimationMultiTexture amt(&sprite2);
+    AnimationMultiTexture amt;
     sprite2.animations.push_back(&amt);
 
     spriteBackground.translate(0, 0);
