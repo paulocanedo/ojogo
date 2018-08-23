@@ -1,25 +1,15 @@
 #include "AnimationTranslate.hpp"
 
-AnimationTranslate::AnimationTranslate(Sprite* sprite) {
-    this->sprite = sprite;
+AnimationTranslate::AnimationTranslate() {
 }
 
-bool AnimationTranslate::update(float currentTime) {
-    float startTime = this->startTimeUpdate;
+bool AnimationTranslate::updateFrame(Sprite* sprite, float currentTime, float ellapsedTime, float ellapsedTimeTotal, glm::vec3 startLocation) {
+    this->dx += ellapsedTime * 100.0f * (ellapsedTimeTotal > 3.0f ? -1.0f : 1.0f);
 
-    if (startTime == -1.0f)
-    {
-        this->startTimeUpdate = currentTime;
-        this->startLocation = sprite->getTranslateVec();
-    }
-    float ellapsedTime = currentTime - startTime;
-
-    float x = this->startLocation.x + (ellapsedTime * 200.0f);
-    float y = this->startLocation.y;
-
-    std::cout << "(" << x << "," << y << ")" << std::endl;
+    float x = startLocation.x + this->dx;
+    float y = startLocation.y;
 
     sprite->translate(x, y);
 
-    return ellapsedTime < 10.0f;
+    return ellapsedTimeTotal < 10.0f;
 }

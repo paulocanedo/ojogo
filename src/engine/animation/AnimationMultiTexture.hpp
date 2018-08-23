@@ -1,21 +1,20 @@
 #pragma once
 
 #include "../Animation.hpp"
-#include "../Sprite.hpp"
 
 class AnimationMultiTexture : public Animation {
 
 public:
-    AnimationMultiTexture(Sprite* sprite, float changeFrameTime = 0.05f);
-    ~AnimationMultiTexture() {}
-    bool update(float currentTime) override;
+  AnimationMultiTexture(float changeFrameTime = AnimationMultiTexture::DEFAULT_CHANGE_FRAME_TIME);
+  ~AnimationMultiTexture() {}
+  bool updateFrame(Sprite *sprite, float currentTime, float ellapsedTime, float ellapsedTimeTotal, glm::vec3 startLocation) override;
 
-    void setChangeFrameTime(float time);
-    float getChangeFrameTime();
+  void setChangeFrameTime(float time);
+  float getChangeFrameTime();
 
 private:
-    Sprite *sprite;
-    float startTimeUpdate = -1.0f;
+    static const float DEFAULT_CHANGE_FRAME_TIME;
 
-    float changeFrameTime = 0.05f;
+    float lastFrameChange = -1.0f;
+    float changeFrameTime = DEFAULT_CHANGE_FRAME_TIME;
 };

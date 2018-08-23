@@ -1,20 +1,17 @@
 #include "AnimationMultiTexture.hpp"
 
-AnimationMultiTexture::AnimationMultiTexture(Sprite *sprite, float changeFrameTime)
+const float AnimationMultiTexture::DEFAULT_CHANGE_FRAME_TIME = 0.05f;
+
+AnimationMultiTexture::AnimationMultiTexture(float changeFrameTime)
 {
-    this->sprite = sprite;
     this->changeFrameTime = changeFrameTime;
 }
 
-bool AnimationMultiTexture::update(float currentTime) {
-    if (startTimeUpdate == -1.0f) {
-        startTimeUpdate = currentTime;
-    }
-    float ellapsedTime = currentTime - startTimeUpdate;
-
-    if (ellapsedTime > this->changeFrameTime) {
-        startTimeUpdate = currentTime; //reset time
+bool AnimationMultiTexture::updateFrame(Sprite* sprite, float currentTime, float ellapsedTime, float ellapsedTimeTotal, glm::vec3 startLocation)
+{
+    if ((currentTime - this->lastFrameChange) > this->changeFrameTime) {
         sprite->nextFrame();
+        this->lastFrameChange = currentTime;
     }
 
     return true;

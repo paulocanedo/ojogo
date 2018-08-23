@@ -1,18 +1,16 @@
 #pragma once
 
 #include "../Animation.hpp"
-#include "../Sprite.hpp"
 
 class AnimationTranslate : public Animation {
 
 public:
-    AnimationTranslate(Sprite* sprite);
+    AnimationTranslate();
     ~AnimationTranslate() {}
 
-    bool update(float currentTime) override;
+    bool update(float currentTime);
+    bool updateFrame(Sprite* sprite, float currentTime, float ellapsedTime, float ellapsedTimeTotal, glm::vec3 startLocation) override;
 
-private:
-    Sprite* sprite;
-    float startTimeUpdate = -1.0f;
-    glm::vec3 startLocation;
+  private:
+    float dx = 0.0f;
 };
