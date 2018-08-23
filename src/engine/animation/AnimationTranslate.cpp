@@ -1,6 +1,9 @@
 #include "AnimationTranslate.hpp"
 
-AnimationTranslate::AnimationTranslate() {
+AnimationTranslate::AnimationTranslate(float duration, float dxTotal, float dyTotal) {
+    this->duration = duration;
+    this->dxTotal = dxTotal;
+    this->dyTotal = dyTotal;
 }
 
 AnimationTranslate::~AnimationTranslate() {
@@ -8,12 +11,13 @@ AnimationTranslate::~AnimationTranslate() {
 }
 
 bool AnimationTranslate::updateFrame(Sprite* sprite, float currentTime, float ellapsedTime, float ellapsedTimeTotal, glm::vec3 startLocation) {
-    this->dx += ellapsedTime * 100.0f * (ellapsedTimeTotal > 3.0f ? -1.0f : 1.0f);
 
-    float x = startLocation.x + this->dx;
-    float y = startLocation.y;
 
-    sprite->translate(x, y);
+    float partial = ellapsedTimeTotal / this->duration;
+    float dx = this->dxTotal * partial;
+    float dy = this->dyTotal * partial;
 
-    return ellapsedTimeTotal < 10.0f;
+    sprite->translate(dx, dy);
+
+    return ellapsedTimeTotal < this->duration;
 }

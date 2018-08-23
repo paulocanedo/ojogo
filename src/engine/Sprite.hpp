@@ -48,7 +48,7 @@ private:
 
   glm::vec3 mTranslate;
   glm::vec3 mScale;
-  float angle;
+  float angle = 0.0f;
 
   bool initialized = false;
   int currentFrame = 0;

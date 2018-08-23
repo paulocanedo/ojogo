@@ -1,14 +1,5 @@
 #include "Texture.hpp"
 
-void Texture::setup() {
-  glGenTextures(1, &this->id);
-
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-}
-
 Texture::Texture() {
   this->setup();
 }
@@ -17,6 +8,15 @@ Texture::~Texture() {
   glDeleteTextures(1, &this->id);
 
   std::cout << __FUNCTION__ << ": " << this->id << std::endl;
+}
+
+void Texture::setup() {
+  glGenTextures(1, &this->id);
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 }
 
 void Texture::active() {

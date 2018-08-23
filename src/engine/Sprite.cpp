@@ -161,6 +161,18 @@ void Sprite::draw(Shader *shader = nullptr) {
     shader->setInt("ourTexture1", 0);
   }
 
+  // if (shader != nullptr) {
+  //   shader->use();
+
+  //   glm::mat4 myModel(1.0f);
+
+  //   myModel = glm::translate(myModel, glm::vec3(50.0f, 50.0f, 0.0f));
+  //   myModel = glm::scale(myModel, glm::vec3(256.0f, 256.0f, 1.0f));
+
+  //   shader->setMat4("model", myModel);
+  //   shader->setInt("ourTexture1", 0);
+  // }
+
   glDrawArrays(GL_TRIANGLE_STRIP, 0, nVertices);
 }
 
@@ -219,6 +231,8 @@ glm::mat4 Sprite::calculateModelMatrix(float tx, float ty, float sx, float sy, f
   mat = glm::translate(mat, glm::vec3(tx, ty, 0.0f));
   mat = glm::scale(mat, glm::vec3(sx, sy, 1.0f));
   mat = glm::rotate(mat, angle, glm::vec3(0.0f, 0.0f, 1.0f));
+
+  std::cout << "angle: " << angle << std::endl;
 
   return mat;
 }

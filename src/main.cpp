@@ -74,7 +74,7 @@ int main()
     std::unique_ptr<AnimationMultiImage> amt = std::make_unique<AnimationMultiImage>();
     cat->animations.push_back(amt.get());
 
-    std::unique_ptr<AnimationTranslate> at = std::make_unique<AnimationTranslate>();
+    std::unique_ptr<AnimationTranslate> at = std::make_unique<AnimationTranslate>(10.0f, 1200.0, 500.0f);
     goku->animations.push_back(at.get());
 
     // render loop
@@ -113,8 +113,8 @@ int main()
         }
     }
 
-    bola = {};
     goku = {};
+    bola = {};
     cat = {};
 
     // glfw: terminate, clearing all previously allocated GLFW resources.
