@@ -1,5 +1,8 @@
 #include "Animation.hpp"
 
+Animation::~Animation() {
+}
+
 bool Animation::update(Sprite* sprite, float currentTime)
 {
     float startTime = this->startTime;

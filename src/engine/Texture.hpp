@@ -6,15 +6,16 @@ class Texture
 {
 public:
   Texture();
+  ~Texture();
 
   void bind();
   void active();
   void load(const char *file);
-  void free();
 
   int getWidth();
   int getHeight();
   int getNrChannels();
+  float getAspectRatio();
 
 private:
   GLuint id;

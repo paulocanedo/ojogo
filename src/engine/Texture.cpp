@@ -13,6 +13,12 @@ Texture::Texture() {
   this->setup();
 }
 
+Texture::~Texture() {
+  glDeleteTextures(1, &this->id);
+
+  std::cout << __FUNCTION__ << ": " << this->id << std::endl;
+}
+
 void Texture::active() {
   glActiveTexture(GL_TEXTURE0);
 }
@@ -37,16 +43,18 @@ void Texture::load(const char *file) {
   glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void Texture::free() {
-  glDeleteTextures(1, &this->id);
-}
-
 int Texture::getWidth() {
   return this->width;
 }
+
 int Texture::getHeight() {
   return this->height;
 }
+
 int Texture::getNrChannels() {
   return this->nrChannels;
+}
+
+float Texture::getAspectRatio() {
+  return this->getWidth() / (float)this->getHeight();
 }

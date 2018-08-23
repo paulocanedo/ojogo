@@ -2,14 +2,48 @@
 
 Sprite::Sprite()
 {
+  this->setup();
 }
 
 Sprite::~Sprite() {
+  if(initialized) {
+    if ((this->vboId) > 0)
+      glDeleteBuffers(1, &this->vboId);
 
+    if ((this->vaoId) > 0)
+      glDeleteVertexArrays(1, &this->vaoId);
+  }
+
+  std::cout << __FUNCTION__ << ": " << this->vboId << ";" << this->vaoId << std::endl;
+}
+
+std::shared_ptr<Sprite> Sprite::fromTexture(const char* filename, float width) {
+  std::shared_ptr<Sprite> sprite = std::make_shared<Sprite>();
+
+  sprite->texture = std::make_unique<Texture>();
+  sprite->texture->load(filename);
+  sprite->scaleWithAspect(width);
+
+  return sprite;
+}
+
+std::shared_ptr<Sprite> Sprite::fromMultiImage(const char *filename, float width, int rows, int columns) {
+  std::shared_ptr<Sprite> sprite = Sprite::fromTexture(filename, width);
+
+  sprite->rows = rows;
+  sprite->columns = columns;
+  sprite->setCurrentElement(0, 0);
+
+  return sprite;
 }
 
 void Sprite::scale(float s) {
   this->scale(s, s);
+}
+
+void Sprite::scaleWithAspect(float sx) {
+  float sy = sx * this->getHeight() / this->getWidth();
+  this->scale(sx, sy);
 }
 
 void Sprite::scale(float sx, float sy) {
@@ -38,6 +72,24 @@ void Sprite::setModelMatrix(glm::mat4 mat) {
   this->model = mat;
 }
 
+float Sprite::getWidth() {
+  if(texture) {
+    return texture->getWidth();
+  }
+
+  std::cerr << __FUNCTION__ << ": not implemented yet for non-texture" << std::endl;
+  return 0.0f;
+}
+
+float Sprite::getHeight() {
+  if (texture) {
+    return texture->getHeight();
+  }
+
+  std::cerr << __FUNCTION__ << ": not implemented yet for non-texture" << std::endl;
+  return 0.0f;
+}
+
 glm::vec3 Sprite::getTranslateVec() {
   return this->mTranslate;
 }
@@ -50,15 +102,13 @@ float Sprite::getRotation() {
   return this->angle;
 }
 
-void Sprite::setTexture(Texture *texture, int rows, int columns) {
-  this->texture = texture;
-  this->rows = rows;
-  this->columns = columns;
-}
-
 void Sprite::setCurrentElement(int currentRow, int currentColumn) {
   float rows = this->rows;
   float columns = this->columns;
+
+  if (rows < 1 && columns < 1) {
+    std::cerr << __FUNCTION__ << ": should not call this function without define columns and rows" << std::endl;
+  }
 
   currentRow = (this->rows - 1) - currentRow;
 
@@ -76,9 +126,9 @@ void Sprite::setCurrentElement(int currentRow, int currentColumn) {
 }
 
 void Sprite::update(float currentTime) {
-  if(!this->initialized) {
-    this->setup();
-  }
+  // if(!this->initialized) {
+  //   this->setup();
+  // }
 
   if(this->currentAnimation != nullptr) {
     Animation *animation = this->currentAnimation;
@@ -114,14 +164,6 @@ void Sprite::draw(Shader *shader = nullptr) {
   glDrawArrays(GL_TRIANGLE_STRIP, 0, nVertices);
 }
 
-void Sprite::gc() {
-  if((this->vboId) > 0)
-    glDeleteBuffers(1, &this->vboId);
-
-  if((this->vaoId) > 0)
-    glDeleteVertexArrays(1, &this->vaoId);
-}
-
 //--------------------------------------------
 void Sprite::setup()
 {
@@ -130,10 +172,6 @@ void Sprite::setup()
 
   this->upload();
   this->initialized = true;
-
-  if(this->rows > 1 || this->columns > 1) {
-    this->nextFrame();
-  }
 
   this->customSetup();
 }

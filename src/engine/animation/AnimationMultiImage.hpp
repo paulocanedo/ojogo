@@ -2,11 +2,11 @@
 
 #include "../Animation.hpp"
 
-class AnimationMultiTexture : public Animation {
+class AnimationMultiImage : public Animation {
 
 public:
-  AnimationMultiTexture(float changeFrameTime = AnimationMultiTexture::DEFAULT_CHANGE_FRAME_TIME);
-  ~AnimationMultiTexture() {}
+  AnimationMultiImage(float changeFrameTime = AnimationMultiImage::DEFAULT_CHANGE_FRAME_TIME);
+  ~AnimationMultiImage();
   bool updateFrame(Sprite *sprite, float currentTime, float ellapsedTime, float ellapsedTimeTotal, glm::vec3 startLocation) override;
 
   void setChangeFrameTime(float time);

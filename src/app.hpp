@@ -14,6 +14,7 @@
 #include <sstream>
 #include <functional>
 #include <vector>
+#include <memory>
 
 #include "Shader.hpp"
 #include "stb_image.h"

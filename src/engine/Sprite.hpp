@@ -1,7 +1,8 @@
 #pragma once
 
-#include "Animation.hpp"
 #include "../app.hpp"
+
+#include "Animation.hpp"
 #include "Texture.hpp"
 
 class Animation;
@@ -12,21 +13,26 @@ public:
   Sprite();
   virtual ~Sprite();
 
+  static std::shared_ptr<Sprite> fromTexture(const char* filename, float width = 10.0f);
+  static std::shared_ptr<Sprite> fromMultiImage(const char *filename, float width, int rows, int columns);
+
   void scale(float s);
+  void scaleWithAspect(float sx);
   void scale(float sx, float sy);
   void translate(float tx, float ty);
   void rotate(float angle);
 
   void setModelMatrix(glm::mat4 mat);
-  void setTexture(Texture *texture, int rows = 1, int columns = 1);
   void setCurrentElement(int row, int column);
   void nextFrame();
 
+  float getWidth();
+  float getHeight();
   glm::vec3 getTranslateVec();
   glm::vec3 getScaleVec();
   float getRotation();
 
-  virtual void customSetup()  { std::cout << "Sprite::customSetup" << std::endl; }
+  virtual void customSetup() {};
   void setup();
   void update(float currentTime);
   void draw(Shader *shader);
@@ -48,7 +54,8 @@ private:
   int currentFrame = 0;
   int rows;
   int columns;
-  Texture *texture = nullptr;
+
+  std::unique_ptr<Texture> texture;
   Animation* currentAnimation = nullptr;
 
   glm::mat4 model = glm::mat4(1.0f);
@@ -59,5 +66,4 @@ private:
   bool canDraw();
 
   glm::mat4 calculateModelMatrix(float tx, float ty, float sx, float sy, float angle);
-
 };

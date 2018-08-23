@@ -26,7 +26,7 @@ executable('ojogo', [
   './src/engine/Sprite.cpp',
   './src/engine/Texture.cpp',
   './src/engine/Animation.cpp',
-  './src/engine/animation/AnimationMultiTexture.cpp',
+  './src/engine/animation/AnimationMultiImage.cpp',
   './src/engine/animation/AnimationTranslate.cpp',
 ],
 	link_args: '-ldl',
