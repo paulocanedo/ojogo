@@ -5,16 +5,14 @@ Animation::~Animation() {
 
 bool Animation::update(Sprite* sprite, float currentTime)
 {
-    float startTime = this->startTime;
-
-    if (startTime == -1.0f)
+    if (this->startTime == -1.0f)
     {
         this->startTime = currentTime;
         this->lastFrameTime = currentTime;
         this->startLocation = sprite->getTranslateVec();
     }
     float ellapsedTime = currentTime - lastFrameTime;
-    float ellapsedTimeTotal = currentTime - startTime;
+    float ellapsedTimeTotal = currentTime - this->startTime;
 
     bool result = this->updateFrame(sprite, currentTime, ellapsedTime, ellapsedTimeTotal, this->startLocation);
 
