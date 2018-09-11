@@ -7,16 +7,57 @@
 
 class Animation;
 
+/**
+ * A class representing a game sprite. Currently only texture draw/fill is supported
+ */
 class Sprite
 {
 public:
+  /**
+  * Constructor
+  */
   Sprite();
+
+  /**
+  * Destructor
+  */
   virtual ~Sprite();
 
+  /**
+  * Alloc a sprite with a simple texture based
+  * @param filename path to image
+  * @param width dimension of the sprite, height will be calculate respecting the aspect of texture.
+  *              If you wanna to define height, please use scale() method
+  * @see scale()
+  * @see fromMultiImage
+  * @return A sprite with texture attached
+  */
   static std::shared_ptr<Sprite> fromTexture(const char* filename, float width = 10.0f);
+
+  /**
+  * Alloc a sprite with a multi image texture based
+  * @param filename path to image
+  * @param width dimension of the sprite, height will be calculate respecting the aspect of texture.
+  *              If you wanna to define height, please use scale() method
+  * @param rows number of rows from multi image texture
+  * @param columns number of columns from multi image texture
+  * @see scale()
+  * @see nextFrame()
+  * @see setCurrentElement
+  * @return A sprite with texture attached
+  */
   static std::shared_ptr<Sprite> fromMultiImage(const char *filename, float width, int rows, int columns);
 
+  /**
+   * set sprite scale for both x and y
+   * @param s scale value
+   */
   void scale(float s);
+
+  /**
+   * set sprite scale based on x and texture aspect
+   * @param sx scale of x, the y value will be calculate based on aspect
+   */
   void scaleWithAspect(float sx);
   void scale(float sx, float sy);
   void translate(float tx, float ty);
