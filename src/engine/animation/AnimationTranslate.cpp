@@ -11,11 +11,13 @@ AnimationTranslate::~AnimationTranslate() {
 }
 
 bool AnimationTranslate::updateFrame(Sprite* sprite, float currentTime, float ellapsedTime, float ellapsedTimeTotal, glm::vec3 startLocation) {
+    float partial = 1.0f;
+    if (ellapsedTimeTotal < this->duration) {
+        partial = ellapsedTimeTotal / this->duration;
+    }
 
-
-    float partial = ellapsedTimeTotal / this->duration;
-    float dx = this->dxTotal * partial;
-    float dy = this->dyTotal * partial;
+    float dx = startLocation.x + this->dxTotal * partial;
+    float dy = startLocation.y + this->dyTotal * partial;
 
     sprite->translate(dx, dy);
 
