@@ -10,7 +10,7 @@ public:
     bool updateFrame(Sprite* sprite, float currentTime, float ellapsedTime, float ellapsedTimeTotal, glm::vec3 startLocation) override;
 
   private:
-    float g = 10.0f;
+    float gravidade = 10.0f;
 
     float yFinal;
 };
