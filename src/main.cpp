@@ -3,13 +3,17 @@
 
 #include "engine/animation/AnimationMultiImage.hpp"
 #include "engine/animation/AnimationTranslate.hpp"
+#include "engine/animation/AnimationQuedaLivre.hpp"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
+void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods);
 
 // settings
 const unsigned int SCR_HEIGHT = 1024;
 const unsigned int SCR_WIDTH = SCR_HEIGHT * 16 / 9;
+
+std::shared_ptr<Sprite> goku;
 
 int main()
 {
@@ -62,11 +66,11 @@ int main()
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    std::shared_ptr<Sprite> goku = Sprite::fromTexture("./texturas/goku.png", 200.0f);
+    goku = Sprite::fromTexture("./texturas/goku.png", 200.0f);
     goku->translate(20, 20);
 
-    std::shared_ptr<Sprite> bola = Sprite::fromTexture("./texturas/awesomeface.png", 256.0f);
-    bola->translate(500, 500);
+    std::shared_ptr<Sprite> bola = Sprite::fromTexture("./texturas/awesomeface.png", 32.0f);
+    bola->translate(700, SCR_HEIGHT - 30);
 
     std::shared_ptr<Sprite> cat = Sprite::fromMultiImage("./texturas/sprite.png", 200.0f, 2, 4);
     cat->translate(SCR_WIDTH - 300, 20);
@@ -74,8 +78,11 @@ int main()
     std::unique_ptr<AnimationMultiImage> amt = std::make_unique<AnimationMultiImage>();
     cat->animations.push_back(amt.get());
 
-    std::unique_ptr<AnimationTranslate> at = std::make_unique<AnimationTranslate>(10.0f, 1200.0, 500.0f);
-    goku->animations.push_back(at.get());
+    // std::unique_ptr<AnimationTranslate> at = std::make_unique<AnimationTranslate>(10.0f, 1200.0, 500.0f);
+    // goku->animations.push_back(at.get());
+
+    // std::unique_ptr<AnimationVerticalMovement> ql = std::make_unique<AnimationVerticalMovement>();
+    // bola->animations.push_back(ql.get());
 
     // render loop
     // -----------
@@ -84,6 +91,7 @@ int main()
         // input
         // -----
         processInput(window);
+        glfwSetKeyCallback(window, key_callback);
 
         // render
         // ------
@@ -131,6 +139,41 @@ void processInput(GLFWwindow *window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+}
+
+void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
+    if (action != GLFW_PRESS) return;
+
+    float duration = 0.5f;
+    float distance = 300.0f;
+    bool right = true;
+    bool flag = false;
+
+    switch (key)
+    {
+    case GLFW_KEY_RIGHT:
+        right = true;
+        flag = true;
+        std::cout << "pressed key: right, " << action << std::endl;
+        break;
+    case GLFW_KEY_DOWN:
+        std::cout << "pressed key: down, " << action << std::endl;
+        break;
+    case GLFW_KEY_LEFT:
+        right = false;
+        flag = true;
+        std::cout << "pressed key: left, " << action << std::endl;
+        break;
+    case GLFW_KEY_UP:
+        std::cout << "pressed key: up, " << action << std::endl;
+        break;
+    default:
+        break;
+    }
+
+    if(flag) {
+        goku->animations.push_back(new AnimationTranslate(duration, distance * (right ? 1.0f : -1.0f), 0.0f));
+    }
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
