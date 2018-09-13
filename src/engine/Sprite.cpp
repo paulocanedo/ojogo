@@ -2,7 +2,6 @@
 
 Sprite::Sprite()
 {
-  this->setup();
 }
 
 Sprite::~Sprite() {
@@ -126,9 +125,9 @@ void Sprite::setCurrentElement(int currentRow, int currentColumn) {
 }
 
 void Sprite::update(float currentTime) {
-  // if(!this->initialized) {
-  //   this->setup();
-  // }
+  if(!this->initialized) {
+    this->setup();
+  }
 
   if(this->currentAnimation != nullptr) {
     Animation *animation = this->currentAnimation;
@@ -145,7 +144,7 @@ void Sprite::update(float currentTime) {
   }
 }
 
-void Sprite::draw(Shader *shader = nullptr) {
+void Sprite::draw(Shader *shader) {
   if(!this->canDraw()) return;
 
   int nVertices = this->numberOfVertices;
