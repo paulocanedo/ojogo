@@ -1,4 +1,5 @@
 #include "app.hpp"
+#include "engine/Game.hpp"
 #include "engine/Sprite.hpp"
 
 #include "engine/animation/AnimationMultiImage.hpp"
@@ -20,110 +21,35 @@ int main()
     
     std::cout << "Window size: (" << SCR_WIDTH << "," << SCR_HEIGHT << ")" << std::endl;
 
-    // glfw: initialize and configure
-    // ------------------------------
-    glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
-
-#ifdef __APPLE__
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // uncomment this statement to fix compilation on OS X
-#endif
-
-    // glfw window creation
-    // --------------------
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
-    if (window == NULL)
-    {
-        std::cout << "Failed to create GLFW window" << std::endl;
-        glfwTerminate();
-        return -1;
-    }
-    glfwMakeContextCurrent(window);
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-
-    // glad: load all OpenGL function pointers
-    // ---------------------------------------
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-    {
-        std::cout << "Failed to initialize GLAD" << std::endl;
-        return -1;
-    }
+    Game* game = new Game();
+    game->setup();    
+    // glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     // build and compile our shader program
     // ------------------------------------
     Shader shader("./shaders/simple.vert", "./shaders/simple.frag");
-    // Shader shader("./shaders/simple.vert", "./shaders/reflection.frag");
-    shader.use();
-
-    // glm::mat4 projection(1.0f);
-    // glm::mat4 projection = glm::ortho(0.0f, 40.0f, 0.0f, 40.0f, -1.0f, 1.0f);
-    glm::mat4 projection = glm::ortho(0.0f, (float)SCR_WIDTH, 0.0f, (float)SCR_HEIGHT, -1.0f, 1.0f);
-    shader.setMat4("projection", projection);
-
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     goku = Sprite::fromTexture("./texturas/goku.png", 200.0f);
     goku->translate(20, 20);
 
-    std::shared_ptr<Sprite> bola = Sprite::fromTexture("./texturas/awesomeface.png", 32.0f);
-    bola->translate(700, SCR_HEIGHT - 30);
+    // std::shared_ptr<Sprite> bola = Sprite::fromTexture("./texturas/awesomeface.png", 32.0f);
+    // bola->translate(700, SCR_HEIGHT - 30);
 
-    std::shared_ptr<Sprite> cat = Sprite::fromMultiImage("./texturas/sprite.png", 200.0f, 2, 4);
-    cat->translate(SCR_WIDTH - 300, 20);
+    // std::shared_ptr<Sprite> cat = Sprite::fromMultiImage("./texturas/sprite.png", 200.0f, 2, 4);
+    // cat->translate(SCR_WIDTH - 300, 20);
 
-    std::unique_ptr<AnimationMultiImage> amt = std::make_unique<AnimationMultiImage>();
-    cat->animations.push_back(amt.get());
+    // std::unique_ptr<AnimationMultiImage> amt = std::make_unique<AnimationMultiImage>();
+    // cat->animations.push_back(amt.get());
 
-    // std::unique_ptr<AnimationTranslate> at = std::make_unique<AnimationTranslate>(10.0f, 1200.0, 500.0f);
-    // goku->animations.push_back(at.get());
+    glm::mat4 projection = glm::ortho(0.0f, (float)SCR_WIDTH, 0.0f, (float)SCR_HEIGHT, -1.0f, 1.0f);
 
-    // std::unique_ptr<AnimationVerticalMovement> ql = std::make_unique<AnimationVerticalMovement>();
-    // bola->animations.push_back(ql.get());
+    game->setShader(&shader);
+    game->setWorldMatrix(projection);
 
-    // render loop
-    // -----------
-    while (!glfwWindowShouldClose(window))
-    {
-        // input
-        // -----
-        processInput(window);
-        glfwSetKeyCallback(window, key_callback);
+    game->add(goku.get());
+    game->start();
 
-        // render
-        // ------
-        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-        // glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        // glClearColor(0.02f, 0.05f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-        float currentTime = (float)glfwGetTime();
-
-        goku->update(currentTime);
-        goku->draw(&shader);
-
-        bola->update(currentTime);
-        bola->draw(&shader);
-        
-        cat->update(currentTime);
-        cat->draw(&shader);
-
-        // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
-        // -------------------------------------------------------------------------------
-        glfwSwapBuffers(window);
-        glfwPollEvents();
-
-        GLenum error = glGetError();
-        if(error != 0) {
-          std::cout << "erro no opengl: " << error << std::endl;
-        }
-    }
-
-    goku = {};
-    bola = {};
-    cat = {};
+    delete game;
 
     // glfw: terminate, clearing all previously allocated GLFW resources.
     // ------------------------------------------------------------------
