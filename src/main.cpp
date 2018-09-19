@@ -5,6 +5,7 @@
 #include "engine/animation/AnimationMultiImage.hpp"
 #include "engine/animation/AnimationTranslate.hpp"
 #include "engine/animation/AnimationQuedaLivre.hpp"
+#include "engine/animation/AnimationBezier.hpp"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
@@ -40,6 +41,9 @@ int main()
 
     // std::unique_ptr<AnimationMultiImage> amt = std::make_unique<AnimationMultiImage>();
     // cat->animations.push_back(amt.get());
+
+     std::unique_ptr<AnimationBezier> at = std::make_unique<AnimationBezier>(glm::vec2(0.0f, 0.0f),glm::vec2(1000.0f, 350.0f),glm::vec2(0.0f, 700.0f),glm::vec2(500.0f, 0.0f),10);
+     goku->animations.push_back(at.get());
 
     glm::mat4 projection = glm::ortho(0.0f, (float)SCR_WIDTH, 0.0f, (float)SCR_HEIGHT, -1.0f, 1.0f);
 
