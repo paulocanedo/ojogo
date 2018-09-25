@@ -14,14 +14,13 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 const unsigned int SCR_HEIGHT = 1024;
 const unsigned int SCR_WIDTH = SCR_HEIGHT * 16 / 9;
 
-std::shared_ptr<Sprite> goku;
-
 int main()
 {
-    
+
+ {   
     std::cout << "Window size: (" << SCR_WIDTH << "," << SCR_HEIGHT << ")" << std::endl;
 
-    Game* game = new Game();
+    std::unique_ptr<Game> game = std::make_unique<Game>();
     game->setup();    
     // glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
@@ -29,8 +28,13 @@ int main()
     // ------------------------------------
     Shader shader("./shaders/simple.vert", "./shaders/simple.frag");
 
-    goku = Sprite::fromTexture("./texturas/goku.png", 200.0f);
-    goku->translate(20, 20);
+    std::shared_ptr<Sprite> goku = Sprite::fromTexture("./texturas/goku.png", 200.0f);
+    goku->translate(500, 500);
+    goku->rotate(3.14/4.0f);
+
+    std::shared_ptr<Sprite> background = Sprite::fromTexture("./texturas/background.jpg", SCR_WIDTH);
+    std::shared_ptr<Sprite> background2 = Sprite::fromTexture("./texturas/background_2.png", SCR_WIDTH);
+    std::shared_ptr<Sprite> trees = Sprite::fromTexture("./texturas/trees.png", SCR_WIDTH);
 
     // std::shared_ptr<Sprite> bola = Sprite::fromTexture("./texturas/awesomeface.png", 32.0f);
     // bola->translate(700, SCR_HEIGHT - 30);
@@ -46,16 +50,14 @@ int main()
     game->setShader(&shader);
     game->setWorldMatrix(projection);
 
-    game->add(goku.get());
+    // game->add(background2);
+    game->add(goku);
+    // game->add(trees);
     game->start();
+}
 
-    delete game;
-
-    // glfw: terminate, clearing all previously allocated GLFW resources.
-    // ------------------------------------------------------------------
-    glfwTerminate();
-
-    std::cin.get();
+    std::cout << "finish him!" << '\n';
+    // glfwTerminate(); TODO descobrir onde colocar isso aqui
     return 0;
 }
 
@@ -67,130 +69,37 @@ void processInput(GLFWwindow *window)
         glfwSetWindowShouldClose(window, true);
 }
 
-void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
-    if (action != GLFW_PRESS) return;
+// void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
+//     if (action != GLFW_PRESS) return;
 
-    float duration = 0.5f;
-    float distance = 300.0f;
-    bool right = true;
-    bool flag = false;
+//     float duration = 0.5f;
+//     float distance = 300.0f;
+//     bool right = true;
+//     bool flag = false;
 
-    switch (key)
-    {
-    case GLFW_KEY_RIGHT:
-        right = true;
-        flag = true;
-        std::cout << "pressed key: right, " << action << std::endl;
-        break;
-    case GLFW_KEY_DOWN:
-        std::cout << "pressed key: down, " << action << std::endl;
-        break;
-    case GLFW_KEY_LEFT:
-        right = false;
-        flag = true;
-        std::cout << "pressed key: left, " << action << std::endl;
-        break;
-    case GLFW_KEY_UP:
-        std::cout << "pressed key: up, " << action << std::endl;
-        break;
-    default:
-        break;
-    }
+//     switch (key)
+//     {
+//     case GLFW_KEY_RIGHT:
+//         right = true;
+//         flag = true;
+//         std::cout << "pressed key: right, " << action << std::endl;
+//         break;
+//     case GLFW_KEY_DOWN:
+//         std::cout << "pressed key: down, " << action << std::endl;
+//         break;
+//     case GLFW_KEY_LEFT:
+//         right = false;
+//         flag = true;
+//         std::cout << "pressed key: left, " << action << std::endl;
+//         break;
+//     case GLFW_KEY_UP:
+//         std::cout << "pressed key: up, " << action << std::endl;
+//         break;
+//     default:
+//         break;
+//     }
 
-    if(flag) {
-        goku->animations.push_back(new AnimationTranslate(duration, distance * (right ? 1.0f : -1.0f), 0.0f));
-    }
-}
-
-// glfw: whenever the window size changed (by OS or user resize) this callback function executes
-// ---------------------------------------------------------------------------------------------
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
-{
-    // make sure the viewport matches the new window dimensions; note that width and
-    // height will be significantly larger than specified on retina displays.
-    glViewport(0, 0, width, height);
-}
-
-// int MoveToFunction(const FT_Vector *to,
-//                    void *user);
-// int LineToFunction(const FT_Vector *to,
-//                    void *user);
-// int ConicToFunction(const FT_Vector *control,
-//                     const FT_Vector *to,
-//                     void *user);
-// int CubicToFunction(const FT_Vector *controlOne,
-//                     const FT_Vector *controlTwo,
-//                     const FT_Vector *to,
-//                     void *user);
-
-// int MoveToFunction(const FT_Vector *to, void *user)
-// {
-//     std::cout << "moveTo: " << to->x << "," << to->y << std::endl;
-//     return 0;
+//     if(flag) {
+//         goku->animations.push_back(new AnimationTranslate(duration, distance * (right ? 1.0f : -1.0f), 0.0f));
+//     }
 // }
-
-// int LineToFunction(const FT_Vector *to, void *user)
-// {
-//     return 0;
-// }
-
-// int ConicToFunction(const FT_Vector *control, const FT_Vector *to, void *user)
-// {
-//     return 0;
-// }
-
-// int CubicToFunction(const FT_Vector *controlOne,
-//                     const FT_Vector *controlTwo,
-//                     const FT_Vector *to,
-//                     void *user)
-// {
-
-//     return 0;
-// }
-
-// //experimental render text
-// FT_Library m_ftLibrary;
-// FT_Error error = FT_Init_FreeType(&m_ftLibrary);
-// if (error)
-// {
-//     std::cerr << "falha ao carregar freetype lib" << std::endl;
-//     return 2;
-// }
-
-// FT_Face m_ftFace;
-// error = FT_New_Face(m_ftLibrary, "/home/paulocanedo/Downloads/LucidaSansRegular.ttf", 0, &m_ftFace);
-// if (error)
-// {
-//     std::cerr << "falha ao carregar fonte..." << std::endl;
-//  {
-// }{
-
-// F{ = 'P';
-// F{ = FT_Get_Char_Index(m_ftFace, code);
-
-// e{ad_Glyph(m_ftFace,
-//  {         index,
-//  {         FT_LOAD_NO_SCALE | FT_LOAD_NO_BITMAP);
-
-// i{
-// {{
-//     std::cerr << "falha ao carregar glyph..." << std::endl;
-//     return 3;
-// }
-
-// FT_Outline_Funcs callbacks;
-// callbacks.move_to = MoveToFunction;
-// callbacks.line_to = LineToFunction;
-// callbacks.conic_to = ConicToFunction;
-// callbacks.cubic_to = CubicToFunction;
-
-// callbacks.shift = 0;
-// callbacks.delta = 0;
-
-// FT_GlyphSlot slot = m_ftFace->glyph;
-// FT_Outline &outline = slot->outline;
-
-// error = FT_Outline_Decompose(&outline, &callbacks, NULL);
-// // render text
-
-// FT_Done_FreeType(m_ftLibrary);
