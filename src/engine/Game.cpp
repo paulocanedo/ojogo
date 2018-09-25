@@ -1,15 +1,15 @@
 #include "Game.hpp"
 
-Game::Game() {
+Game::Game(unsigned short width, unsigned short height) {
     float pixelScale = 1.0;
 
-    this->width  = 800 * pixelScale;
-    this->height = 600 * pixelScale;
+    this->width  = width * pixelScale;
+    this->height = height * pixelScale;
 }
 
 Game::~Game() {
-    std::cout << "Game destructor" << std::endl;
-    this->sprites.clear();
+    std::cout << __FUNCTION__ << std::endl;
+    this->gc();
 }
 
 void Game::start() {
@@ -114,18 +114,25 @@ void Game::setWorldMatrix(glm::mat4 worldMatrix) {
     this->worldMatrix = worldMatrix;
 }
 
-void Game::add(Sprite* sprite) {
+void Game::add(std::shared_ptr<Sprite> sprite)
+{
     this->sprites.push_back(sprite);
 }
 
-void Game::remove(Sprite* sprite) {
+void Game::remove(std::shared_ptr<Sprite> sprite)
+{
     // this->sprites.remove();
 }
 
-void Game::renderSprites(std::vector<Sprite*> sprites, float currentTime) {
+void Game::renderSprites(std::vector<std::shared_ptr<Sprite>> sprites, float currentTime)
+{
     for(auto it = sprites.cbegin(); it < sprites.cend(); it++) {
-        Sprite* sprite = *it;
-        sprite->update(currentTime);
-        sprite->draw(this->shader);
+        (*it)->update(currentTime);
+        (*it)->draw(this->shader);
     }
+}
+
+void Game::gc() {
+    this->sprites.clear();
+    // glfwTerminate();
 }
