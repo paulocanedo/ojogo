@@ -167,8 +167,8 @@ public:
 private:
   const int numberOfVertices = 4;
 
-  GLuint vaoId;
-  GLuint vboId;
+  GLuint vaoId = 0;
+  GLuint vboId = 0;
 
   glm::vec3 mTranslate;
   glm::vec3 mScale;

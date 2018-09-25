@@ -5,15 +5,21 @@ Sprite::Sprite()
 }
 
 Sprite::~Sprite() {
-  if(initialized) {
-    if ((this->vboId) > 0)
-      glDeleteBuffers(1, &this->vboId);
-
-    if ((this->vaoId) > 0)
-      glDeleteVertexArrays(1, &this->vaoId);
-  }
-
   std::cout << __FUNCTION__ << ": " << this->vboId << ";" << this->vaoId << std::endl;
+
+  if(this->initialized) {
+    if ((this->vboId) > 0) {
+      std::cout << "deleting sprite vbo..." << *(&this->vboId) << '\n';
+      glDeleteBuffers(1, &this->vboId);
+      this->vboId = 0;
+    }
+
+    if ((this->vaoId) > 0) {
+      std::cout << "deleting sprite vao..." << *(&this->vaoId) << '\n';
+      glDeleteVertexArrays(1, &this->vaoId);
+      this->vaoId = 0;
+    }
+  }
 }
 
 std::shared_ptr<Sprite> Sprite::fromTexture(const char* filename, float width) {
@@ -216,8 +222,8 @@ glm::mat4 Sprite::calculateModelMatrix(float tx, float ty, float sx, float sy, f
   glm::mat4 mat(1.0);
 
   mat = glm::translate(mat, glm::vec3(tx, ty, 0.0f));
-  mat = glm::scale(mat, glm::vec3(sx, sy, 1.0f));
   mat = glm::rotate(mat, angle, glm::vec3(0.0f, 0.0f, 1.0f));
+  mat = glm::scale(mat, glm::vec3(sx, sy, 1.0f));
 
   return mat;
 }
