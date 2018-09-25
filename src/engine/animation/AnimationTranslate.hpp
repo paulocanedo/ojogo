@@ -8,7 +8,6 @@ public:
     AnimationTranslate(float duration, float dxTotal, float dyTotal);
     ~AnimationTranslate();
 
-    bool update(float currentTime);
     bool updateFrame(Sprite* sprite, float currentTime, float ellapsedTime, float ellapsedTimeTotal, glm::vec3 startLocation) override;
 
   private:
