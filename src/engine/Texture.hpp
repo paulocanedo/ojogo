@@ -18,10 +18,12 @@ public:
   float getAspectRatio();
 
 private:
-  GLuint id;
+  GLuint id = 0;
   int width;
   int height;
   int nrChannels;
+
+  bool initialized = false;
 
   void setup();
 };

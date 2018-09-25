@@ -5,9 +5,9 @@ Texture::Texture() {
 }
 
 Texture::~Texture() {
-  glDeleteTextures(1, &this->id);
-
   std::cout << __FUNCTION__ << ": " << this->id << std::endl;
+
+  // glDeleteTextures(1, &this->id);
 }
 
 void Texture::setup() {
