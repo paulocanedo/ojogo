@@ -3,7 +3,7 @@
 
 #define BEZIER_STEP 0.01f
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void processInput(GLFWwindow *window);
 
 // settings
@@ -14,9 +14,9 @@ static int MoveToFunction(FT_Vector *to, void *user);
 static int LineToFunction(FT_Vector *to, void *user);
 static int ConicToFunction(FT_Vector *control, FT_Vector *to, void *user);
 static int CubicToFunction(const FT_Vector *controlOne,
-                             const FT_Vector *controlTwo,
-                             const FT_Vector *to,
-                             void *user);
+                           const FT_Vector *controlTwo,
+                           const FT_Vector *to,
+                           void *user);
 
 using Coord = float;
 using N = uint32_t;
@@ -31,16 +31,17 @@ struct char_drawing_t
     std::vector<Point> data;
 } char_drawing;
 
-
-int MoveToFunction(FT_Vector *to, void *user) {
+int MoveToFunction(FT_Vector *to, void *user)
+{
     char_drawing_t *info = static_cast<char_drawing_t *>(user);
 
     info->seg_count++;
-    if(info->control > 0) {
+    if (info->control > 0)
+    {
         info->count.push_back(info->control - info->first.back());
     }
     info->first.push_back(info->control);
-    
+
     float x = to->x, y = to->y;
     info->data.push_back({x, y});
     // info->data.push_back(to->x);
@@ -50,7 +51,8 @@ int MoveToFunction(FT_Vector *to, void *user) {
     return 0;
 }
 
-int LineToFunction(FT_Vector *to, void *user) {
+int LineToFunction(FT_Vector *to, void *user)
+{
     char_drawing_t *info = static_cast<char_drawing_t *>(user);
     float x = to->x, y = to->y;
     info->data.push_back({x, y});
@@ -59,7 +61,8 @@ int LineToFunction(FT_Vector *to, void *user) {
     return 0;
 }
 
-int ConicToFunction(FT_Vector *control, FT_Vector *to, void *user) {
+int ConicToFunction(FT_Vector *control, FT_Vector *to, void *user)
+{
     char_drawing_t *info = static_cast<char_drawing_t *>(user);
 
     Point p0 = info->data.end()[-1];
@@ -71,7 +74,8 @@ int ConicToFunction(FT_Vector *control, FT_Vector *to, void *user) {
 
     float px2 = to->x;
     float py2 = to->y;
-    for(float delta=0.0f; delta <= 1.0f; delta += BEZIER_STEP) {
+    for (float delta = 0.0f; delta <= 1.0f; delta += BEZIER_STEP)
+    {
         float x = pow(1 - delta, 2) * px0 + (1 - delta) * 2 * delta * px1 + delta * delta * px2;
         float y = pow(1 - delta, 2) * py0 + (1 - delta) * 2 * delta * py1 + delta * delta * py2;
 
@@ -83,10 +87,11 @@ int ConicToFunction(FT_Vector *control, FT_Vector *to, void *user) {
 }
 
 static int CubicToFunction(const FT_Vector *controlOne,
-                             const FT_Vector *controlTwo,
-                             const FT_Vector *to,
-                             void *user) {
-    
+                           const FT_Vector *controlTwo,
+                           const FT_Vector *to,
+                           void *user)
+{
+
     char_drawing_t *info = static_cast<char_drawing_t *>(user);
 
     Point p = info->data.end()[-1];
@@ -101,7 +106,8 @@ static int CubicToFunction(const FT_Vector *controlOne,
 
     float px3 = to->x;
     float py3 = to->y;
-    for(float delta=0.0f; delta <= 1.0f; delta += BEZIER_STEP) {
+    for (float delta = 0.0f; delta <= 1.0f; delta += BEZIER_STEP)
+    {
         float x = pow(1 - delta, 3) * px0 + pow(1 - delta, 2) * 3 * delta * px1 + (1 - delta) * 3 * delta * delta * px2 + delta * delta * delta * px3;
         float y = pow(1 - delta, 3) * py0 + pow(1 - delta, 2) * 3 * delta * py1 + (1 - delta) * 3 * delta * delta * py2 + delta * delta * delta * py3;
 
@@ -116,100 +122,65 @@ int main()
 {
     FT_Library ft_library;
     FT_Error error = FT_Init_FreeType(&ft_library);
-    if (error) {
+    if (error)
+    {
         std::cout << "Failed loading freetype lib" << std::endl;
         return -1;
     }
 
     FT_ULong code = 'O';
 
-  // For simplicity, use the charmap FreeType provides by default;
-  // in most cases this means Unicode.
-  FT_Face face;
-  FT_New_Face(ft_library, "/home/paulocanedo/Downloads/fonts/Ubuntu-R.ttf", 0, &face);
-//   FT_New_Face(ft_library, "/home/paulocanedo/Downloads/fonts/Txt Regular.ttf", 0, &face);
-//   FT_New_Face(ft_library, "/home/paulocanedo/Downloads/fonts/Air Millhouse Outline.ttf", 0, &face);
-//   FT_New_Face(ft_library, "/home/paulocanedo/Downloads/fonts/Camouflage Snow Snow.ttf", 0, &face);
-//   FT_New_Face(ft_library, "/home/paulocanedo/Downloads/fonts/Starcraft Normal.ttf", 0, &face);
-//   FT_New_Face(ft_library, "/home/paulocanedo/Downloads/fonts/wetp.ttf", 0, &face);
+    // For simplicity, use the charmap FreeType provides by default;
+    // in most cases this means Unicode.
+    FT_Face face;
+    FT_New_Face(ft_library, "/home/paulocanedo/Downloads/fonts/Ubuntu-R.ttf", 0, &face);
+    //   FT_New_Face(ft_library, "/home/paulocanedo/Downloads/fonts/Txt Regular.ttf", 0, &face);
+    //   FT_New_Face(ft_library, "/home/paulocanedo/Downloads/fonts/Air Millhouse Outline.ttf", 0, &face);
+    //   FT_New_Face(ft_library, "/home/paulocanedo/Downloads/fonts/Camouflage Snow Snow.ttf", 0, &face);
+    //   FT_New_Face(ft_library, "/home/paulocanedo/Downloads/fonts/Starcraft Normal.ttf", 0, &face);
+    //   FT_New_Face(ft_library, "/home/paulocanedo/Downloads/fonts/wetp.ttf", 0, &face);
 
+    FT_UInt index = FT_Get_Char_Index(face, code);
 
-  FT_UInt index = FT_Get_Char_Index(face, code);
+    error = FT_Load_Glyph(face,
+                          index,
+                          FT_LOAD_NO_SCALE | FT_LOAD_NO_BITMAP);
 
-  error = FT_Load_Glyph(face,
-                                 index,
-                                 FT_LOAD_NO_SCALE | FT_LOAD_NO_BITMAP);
+    if (error)
+    {
+        std::cout << "Couldn't load the glyph: FT_Load_Glyph() failed" << std::endl;
+        return -1;
+    }
 
-  if (error) {
-    std::cout << "Couldn't load the glyph: FT_Load_Glyph() failed" << std::endl;
-    return -1;
-  }
+    FT_Outline_Funcs callbacks;
 
-  FT_Outline_Funcs callbacks;
+    callbacks.move_to = (FT_Outline_MoveTo_Func)&MoveToFunction;
+    callbacks.line_to = (FT_Outline_LineTo_Func)&LineToFunction;
+    callbacks.conic_to = (FT_Outline_ConicTo_Func)&ConicToFunction;
+    callbacks.cubic_to = (FT_Outline_CubicTo_Func)&CubicToFunction;
 
-  callbacks.move_to = (FT_Outline_MoveTo_Func)&MoveToFunction;
-  callbacks.line_to = (FT_Outline_LineTo_Func)&LineToFunction;
-  callbacks.conic_to = (FT_Outline_ConicTo_Func)&ConicToFunction;
-  callbacks.cubic_to = (FT_Outline_CubicTo_Func)&CubicToFunction;
+    callbacks.shift = 0;
+    callbacks.delta = 0;
 
-  callbacks.shift = 0;
-  callbacks.delta = 0;
+    FT_GlyphSlot slot = face->glyph;
+    FT_Outline &outline = slot->outline;
 
-  FT_GlyphSlot slot = face->glyph;
-  FT_Outline &outline = slot->outline;
+    error = FT_Outline_Decompose(&outline, &callbacks, &char_drawing);
+    char_drawing.count.push_back(char_drawing.control - char_drawing.first.back());
 
-  error = FT_Outline_Decompose(&outline, &callbacks, &char_drawing);
-  char_drawing.count.push_back(char_drawing.control - char_drawing.first.back());
+    if (error)
+    {
+        std::cout << "Couldn't extract the outline: FT_Outline_Decompose() failed";
+        return -1;
+    }
 
-  if (error) {
-    std::cout << "Couldn't extract the outline: FT_Outline_Decompose() failed";
-    return -1;
-  }
+    FT_BBox boundingBox;
+    FT_Outline_Get_BBox(&outline, &boundingBox);
 
-  FT_BBox boundingBox;
-  FT_Outline_Get_BBox(&outline, &boundingBox);
-
-  float xMin = boundingBox.xMin;
-  float yMin = boundingBox.yMin;
-  float xMax = boundingBox.xMax;
-  float yMax = boundingBox.yMax;
-
-  std::vector<int> indices_count;
-  size_t segcount = char_drawing.seg_count;
-  std::vector<std::vector<uint32_t>> indices;
-  std::vector<std::vector<Point>> polygon;
-
-  std::vector<uint32_t> oneDimIdxs;
-  for(int i=0; i<char_drawing.seg_count; i++) {
-      polygon.clear();
-      int start = char_drawing.first[i];
-      int count = char_drawing.count[i];
-
-      auto first = char_drawing.data.cbegin() + start;
-      auto last  = char_drawing.data.cbegin() + (start + count);
-      std::vector<Point> temp(first, last);
-      polygon.push_back(temp);
-        oneDimIdxs = mapbox::earcut<uint32_t>(polygon);
-        break;
-  }
-
-  for(int i=0; i<char_drawing.seg_count; i++) {
-      polygon.clear();
-      int start = char_drawing.first[i];
-      int count = char_drawing.count[i];
-
-      auto first = char_drawing.data.cbegin() + start;
-      auto last  = char_drawing.data.cbegin() + (start + count);
-      std::vector<Point> temp(first, last);
-      polygon.push_back(temp);
-
-      std::vector<uint32_t> triangles_idx = mapbox::earcut<uint32_t>(polygon);
-      uint32_t *data = triangles_idx.data();
-
-      indices_count.push_back(triangles_idx.size());
-      indices.push_back(triangles_idx);
-  }
-  std::cout << std::endl;
+    float xMin = boundingBox.xMin;
+    float yMin = boundingBox.yMin;
+    float xMax = boundingBox.xMax;
+    float yMax = boundingBox.yMax;
 
     // glfw: initialize and configure
     // ------------------------------
@@ -226,7 +197,7 @@ int main()
 
     // glfw window creation
     // --------------------
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", nullptr, nullptr);
+    GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", nullptr, nullptr);
     if (window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -245,9 +216,6 @@ int main()
     }
 
     glEnable(GL_MULTISAMPLE);
-    // glEnable(GL_DEPTH_TEST);
-    // glEnable(GL_LINE_SMOOTH);
-    // glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
     Shader shader("./shaders/simple.vert", "./shaders/simple.frag");
     glm::mat4 model(1.0f);
     glm::mat4 projection = glm::ortho(xMin, xMax, yMin, yMax, -1.0f, 1.0f);
@@ -262,23 +230,22 @@ int main()
     // bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
     glBindVertexArray(VAO);
 
-    float *values = reinterpret_cast<float*>(char_drawing.data.data());
+    float *values = reinterpret_cast<float *>(char_drawing.data.data());
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(float) * char_drawing.data.size() * 2, values, GL_STATIC_DRAW);
 
     // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     // glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * indices.size(), indices.data(), GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void *)0);
     glEnableVertexAttribArray(0);
 
     // note that this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
-    glBindBuffer(GL_ARRAY_BUFFER, 0); 
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     // You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
     // VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
-    glBindVertexArray(0); 
-
+    glBindVertexArray(0);
 
     // uncomment this call to draw in wireframe polygons.
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -300,8 +267,7 @@ int main()
         // glUseProgram(shaderProgram);
         shader.use();
         shader.setMat4("model", model);
-        shader.setMat4("projection", projection);   
-
+        shader.setMat4("projection", projection);
 
         glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
 
@@ -317,13 +283,12 @@ int main()
 
         // shader.setVec3("uColor", 0.0f, 0.0f, 1.0f);
         // glDrawElements(GL_LINES, indices.size(), GL_UNSIGNED_INT, 0);
-        
+
         shader.setVec3("uColor", 0.0f, 0.0f, 0.0f);
         glMultiDrawArrays(GL_LINE_LOOP, char_drawing.first.data(), char_drawing.count.data(), char_drawing.seg_count);
 
+        // glBindVertexArray(0); // no need to unbind it every time
 
-        // glBindVertexArray(0); // no need to unbind it every time 
- 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
         glfwSwapBuffers(window);
@@ -353,9 +318,9 @@ void processInput(GLFWwindow *window)
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
 // ---------------------------------------------------------------------------------------------
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 {
-    // make sure the viewport matches the new window dimensions; note that width and 
+    // make sure the viewport matches the new window dimensions; note that width and
     // height will be significantly larger than specified on retina displays.
     glViewport(0, 0, width, height);
 }
