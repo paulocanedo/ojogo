@@ -69,13 +69,20 @@ void Game::setupGlfw() {
 
     // glfw window creation
     // --------------------
-    GLFWwindow *window = glfwCreateWindow(this->width, this->height, "O Jogo", NULL, NULL);
-    if (window == NULL)
-    {
-        std::cout << "Failed to create GLFW window" << std::endl;
-        glfwTerminate();
-        // return false;
-        // TODO handle error
+        const GLFWvidmode *mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+        glfwWindowHint(GLFW_RED_BITS, mode->redBits);
+        glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
+        glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
+        glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
+        GLFWwindow *window = glfwCreateWindow(mode->width, mode->height, "My Title", glfwGetPrimaryMonitor(), NULL);
+
+        // GLFWwindow *window = glfwCreateWindow(this->width, this->height, "O Jogo", NULL, NULL);
+        if (window == NULL)
+        {
+            std::cout << "Failed to create GLFW window" << std::endl;
+            glfwTerminate();
+            // return false;
+            // TODO handle error
     }
     glfwMakeContextCurrent(window);
 

@@ -6,14 +6,15 @@
 #include "engine/animation/AnimationTranslate.hpp"
 #include "engine/animation/AnimationQuedaLivre.hpp"
 #include "engine/animation/AnimationBezier.hpp"
+#include "engine/animation/AnimationLancamentoObliquo.hpp"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods);
 
 // settings
-const unsigned int SCR_HEIGHT = 1024;
-const unsigned int SCR_WIDTH = SCR_HEIGHT * 16 / 9;
+const float SCR_HEIGHT = 6.0f;
+const float SCR_WIDTH = SCR_HEIGHT * 16 / 9.0f;
 
 int main()
 {
@@ -29,9 +30,16 @@ int main()
     // ------------------------------------
     Shader shader("./shaders/simple.vert", "./shaders/simple.frag");
 
-    std::shared_ptr<Sprite> goku = Sprite::fromTexture("./texturas/goku.png", 200.0f);
-    goku->translate(500, 500);
-    goku->rotate(3.14/4.0f);
+    std::shared_ptr<Sprite> chico = Sprite::fromTexture("./texturas/chico.png", 1.0f);
+    std::shared_ptr<Sprite> indio = Sprite::fromTexture("./texturas/indio.png", 1.0f);
+    std::shared_ptr<Sprite> flecha = Sprite::fromTexture("./texturas/flecha.png", .1f);
+    std::shared_ptr<Sprite> aindio = Sprite::fromMultiImage("./texturas/indio_animacao_teste.png", 1.0f, 12, 6);
+    chico->translate(1, 0.1);
+    indio->translate(4, 0.1);
+    aindio->translate(7, 0.1);
+    // aindio->scale(960.0f / 240.0f,540.0 / 240.0f);
+    flecha->translate(0, SCR_HEIGHT/2.0f);
+    flecha->rotate(glm::radians(60.0f));
 
     std::shared_ptr<Sprite> background = Sprite::fromTexture("./texturas/background.jpg", SCR_WIDTH);
     std::shared_ptr<Sprite> background2 = Sprite::fromTexture("./texturas/background_2.png", SCR_WIDTH);
@@ -46,17 +54,27 @@ int main()
     // std::unique_ptr<AnimationMultiImage> amt = std::make_unique<AnimationMultiImage>();
     // cat->animations.push_back(amt.get());
 
-     std::unique_ptr<AnimationBezier> at = std::make_unique<AnimationBezier>(glm::vec2(0.0f, 0.0f),glm::vec2(1000.0f, 350.0f),glm::vec2(0.0f, 700.0f),glm::vec2(500.0f, 0.0f),10);
-     goku->animations.push_back(at.get());
+    std::unique_ptr<AnimationMultiImage> amt = std::make_unique<AnimationMultiImage>(0.042f);
+    aindio->animations.push_back(amt.get());
+
+    //  std::unique_ptr<AnimationBezier> at = std::make_unique<AnimationBezier>(glm::vec2(0.0f, 0.0f),glm::vec2(1000.0f, 350.0f),glm::vec2(0.0f, 700.0f),glm::vec2(500.0f, 0.0f),10);
+    //  goku->animations.push_back(at.get());
+
+    std::unique_ptr<AnimationLancamentoObliquo> aflecha = std::make_unique<AnimationLancamentoObliquo>(150.0f, 30.0f);
+    // std::unique_ptr<AnimationLancamentoObliquo> aflecha = std::make_unique<AnimationLancamentoObliquo>(150.0f, glm::radians(30.0f));
+    flecha->animations.push_back(aflecha.get());
 
     glm::mat4 projection = glm::ortho(0.0f, (float)SCR_WIDTH, 0.0f, (float)SCR_HEIGHT, -1.0f, 1.0f);
 
     game->setShader(&shader);
     game->setWorldMatrix(projection);
 
-    // game->add(background2);
-    game->add(goku);
-    // game->add(trees);
+    game->add(background2);
+    game->add(trees);
+    game->add(chico);
+    game->add(indio);
+    game->add(flecha);
+    game->add(aindio);
     game->start();
 }
 

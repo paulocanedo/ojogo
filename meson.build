@@ -1,7 +1,12 @@
-project('ojogo', ['cpp', 'c'],        version: '0.1.0',
+project(
+  'ojogo',
+  ['cpp', 'c'],
+  version: '0.1.0',
   meson_version: '>= 0.40.0',
   default_options : ['cpp_std=c++14']
 )
+
+incdir = include_directories('include')
 
 glfw_dep = dependency('glfw3')
 gl_dep = dependency('GL')
@@ -19,17 +24,29 @@ add_project_arguments([
 subdir('src')
 
 executable('ojogo', [
-  './src/main.cpp',
-  './src/glad.c',
-  './src/stb_image.c',
-  './src/engine/Game.cpp',
-  './src/engine/Sprite.cpp',
-  './src/engine/Texture.cpp',
-  './src/engine/Animation.cpp',
-  './src/engine/animation/AnimationMultiImage.cpp',
-  './src/engine/animation/AnimationTranslate.cpp',
-],
+    './src/main.cpp',
+    './src/glad.c',
+    './src/stb_image.c',
+    './src/engine/Game.cpp',
+    './src/engine/Sprite.cpp',
+    './src/engine/Texture.cpp',
+    './src/engine/Animation.cpp',
+    './src/engine/animation/AnimationMultiImage.cpp',
+    './src/engine/animation/AnimationTranslate.cpp',
+    './src/engine/animation/AnimationLancamentoObliquo.cpp',
+  ],
 	link_args: '-ldl',
+	include_directories: incdir,
+	dependencies: [
+		glfw_dep, gl_dep, thread_dep, x11_dep, xrandr_dep, xi_dep, freetype2
+	])
+
+executable('freetype', [
+    './src/freetype_test.cpp',
+    './src/glad.c'
+  ],
+	link_args: '-ldl',
+	include_directories: incdir,
 	dependencies: [
 		glfw_dep, gl_dep, thread_dep, x11_dep, xrandr_dep, xi_dep, freetype2
 	])

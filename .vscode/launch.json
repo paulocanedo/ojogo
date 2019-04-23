@@ -9,7 +9,7 @@
             "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/ojogo",
+            "program": "${workspaceFolder}/build/freetype",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

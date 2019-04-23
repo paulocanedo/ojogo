@@ -38,7 +38,7 @@ void Texture::load(const char *file) {
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0,
             this->nrChannels == 3 ? GL_RGB : GL_RGBA, GL_UNSIGNED_BYTE, image);
   glGenerateMipmap(GL_TEXTURE_2D);
-  stbi_image_free(image);
+  // stbi_image_free(image);
 
   glBindTexture(GL_TEXTURE_2D, 0);
 }

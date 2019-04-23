@@ -42,6 +42,8 @@ public:
      */
     virtual bool updateFrame(Sprite* sprite, float currentTime, float ellapsedTime, float ellapsedTimeTotal, glm::vec3 startLocation) = 0;
 
+    // virtual float progress() = 0;
+
 private:
     float startTime = -1.0f; /* after the first frame update, this will be filled */
     float lastFrameTime = -1.0f; /* control the time spent between frames updated */

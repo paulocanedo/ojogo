@@ -14,6 +14,8 @@ AnimationLancamentoObliquo::~AnimationLancamentoObliquo() {
 
 bool AnimationLancamentoObliquo::updateFrame(Sprite* sprite, float currentTime, float ellapsedTime, float ellapsedTimeTotal, glm::vec3 startLocation) {
 
+    float speed = .01f;
+
     float posiX = this->velocidadeInicial * this->cosseno * ellapsedTimeTotal;
     // velocidade inicial em relação ao seno
     float velocidade = this->velocidadeInicial * this->seno;
@@ -22,7 +24,8 @@ bool AnimationLancamentoObliquo::updateFrame(Sprite* sprite, float currentTime, 
     //posição de Y
     float posiY = velocidadeAtual * ellapsedTimeTotal - (this->gravidade * (pow(ellapsedTimeTotal,2.0f)/2));
     
-    sprite->translate(startLocation.x + posiX, startLocation.y + posiY);
-    return sprite->getTranslateVec().y >= 0;
+    sprite->translate(startLocation.x + posiX * speed, startLocation.y + posiY * speed);
+    return (startLocation.y + posiY * speed) >= 0;
+    // return sprite->getTranslateVec().y >= 0;
  
 }

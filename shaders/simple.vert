@@ -14,5 +14,8 @@ void main()
 {
     texCoord = aTex;
 
+    // gl_Position = vec4(aPos.xy, 1.0, 1.0);
+    // gl_Position = projection * vec4(aPos.xy, 1.0, 1.0);
+    // gl_Position = model * vec4(aPos.xy, 1.0, 1.0);
     gl_Position = projection * model * vec4(aPos.xy, 1.0, 1.0);
 }
