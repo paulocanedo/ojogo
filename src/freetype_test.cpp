@@ -25,7 +25,6 @@ using Point = std::array<Coord, 2>;
 struct char_drawing_t
 {
     int control = 0;
-    int seg_count = 0;
     std::vector<int> first;
     std::vector<int> count;
     std::vector<Point> data;
@@ -35,7 +34,6 @@ int MoveToFunction(FT_Vector *to, void *user)
 {
     char_drawing_t *info = static_cast<char_drawing_t *>(user);
 
-    info->seg_count++;
     if (info->control > 0)
     {
         info->count.push_back(info->control - info->first.back());
@@ -44,8 +42,6 @@ int MoveToFunction(FT_Vector *to, void *user)
 
     float x = to->x, y = to->y;
     info->data.push_back({x, y});
-    // info->data.push_back(to->x);
-    // info->data.push_back(to->y);
     info->control++;
 
     return 0;
@@ -118,6 +114,28 @@ static int CubicToFunction(const FT_Vector *controlOne,
     return 0;
 }
 
+void printPolygon(const std::vector<Point> &polygon, const int start, const int count) {
+    const int end = start + count;
+    std::cout << std::endl;    
+    for(int i=start, count = 0; i < end; i++, count++) {
+        Point elem = polygon.at(i);
+        std::cout << "(";
+        std::cout << elem[0];
+        std::cout << ',';
+        std::cout << elem[1];
+        std::cout << ");";  
+    }
+    std::cout << std::endl;    
+}
+
+void printIndices(const std::vector<N> &indices) {
+    for(const N &value : indices) {
+        std::cout << value;
+        std::cout << ",";
+    }
+    std::cout << std::endl;
+}
+
 int main()
 {
     FT_Library ft_library;
@@ -128,7 +146,7 @@ int main()
         return -1;
     }
 
-    FT_ULong code = 'O';
+    FT_ULong code = 'D';
 
     // For simplicity, use the charmap FreeType provides by default;
     // in most cases this means Unicode.
@@ -182,6 +200,44 @@ int main()
     float xMax = boundingBox.xMax;
     float yMax = boundingBox.yMax;
 
+    std::vector<std::vector<Point>> polygon1;
+    int start1 = char_drawing.first[0];
+    int count1 = char_drawing.count[0];
+
+    auto first1 = char_drawing.data.cbegin() + start1;
+    auto last1 = char_drawing.data.cbegin() + (start1 + count1);
+    std::vector<Point>p1(first1, last1);
+    polygon1.push_back(p1);
+    std::vector<N> indices1 = mapbox::earcut<N>(polygon1);
+
+    printPolygon(char_drawing.data, start1, count1);
+    printIndices(indices1);
+
+    //--------------------------------------------------------------
+    std::vector<std::vector<Point>> polygon2;
+    int start2 = char_drawing.first[1];
+    int count2 = char_drawing.count[1];
+
+    auto first2 = char_drawing.data.cbegin() + start2;
+    auto last2 = char_drawing.data.cbegin() + (start2 + count2);
+    std::vector<Point>p2(first2, last2);
+    polygon2.push_back(p2);
+    std::vector<N> indices2 = mapbox::earcut<N>(polygon2);
+
+    printPolygon(char_drawing.data, start1, count1);
+    printIndices(indices2);
+
+    //--------------------------------------------------------------
+    std::vector<std::vector<Point>> polygon;
+    polygon.push_back(p1);
+    polygon.push_back(p2);
+    std::vector<N> indicesAll = mapbox::earcut<N>(polygon);
+
+
+    std::vector<N> indices = indicesAll;
+    printIndices(indicesAll);
+
+
     // glfw: initialize and configure
     // ------------------------------
     glfwInit();
@@ -218,7 +274,7 @@ int main()
     glEnable(GL_MULTISAMPLE);
     Shader shader("./shaders/simple.vert", "./shaders/simple.frag");
     glm::mat4 model(1.0f);
-    glm::mat4 projection = glm::ortho(xMin, xMax, yMin, yMax, -1.0f, 1.0f);
+    glm::mat4 projection = glm::ortho(xMin - 100, xMax + 100, yMin - 100, yMax + 100, -1.0f, 1.0f);
     // glm::mat4 projection = glm::ortho(-500.0f, 2000.0f, -500.0f, 2000.0f, -1.0f, 1.0f);
 
     std::cout << "char: " << (char)code << std::endl;
@@ -234,8 +290,8 @@ int main()
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(float) * char_drawing.data.size() * 2, values, GL_STATIC_DRAW);
 
-    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    // glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * indices.size(), indices.data(), GL_STATIC_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * indices.size(), indices.data(), GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void *)0);
     glEnableVertexAttribArray(0);
@@ -249,6 +305,11 @@ int main()
 
     // uncomment this call to draw in wireframe polygons.
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+    int glMajor, glMinor, glRef;
+    glfwGetVersion(&glMajor, &glMinor, &glRef);
+
+    std::cout << "GL Version: " << glMajor << "." << glMinor << " rev-" << glRef << std::endl;
 
     // render loop
     // -----------
@@ -271,21 +332,12 @@ int main()
 
         glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
 
-        shader.setVec3("uColor", 1.0f, 0.0f, 0.0f);
-        // const void * const *elem_values = reinterpret_cast<const void * const *>(indices.data());
+        shader.setVec3("uColor", 0.3f, 0.7f, 0.9f);
         // glMultiDrawElements(GL_TRIANGLES, indices_count.data(), GL_UNSIGNED_INT, elem_values, indices.size());
+        glDrawElements(GL_TRIANGLES, sizeof(N) * indices.size(), GL_UNSIGNED_INT, 0);
 
-        // std::vector<uint32_t> tindx = indices.at(1);
-        // glDrawElements(GL_TRIANGLES, oneDimIdxs.size(), GL_UNSIGNED_BYTE, oneDimIdxs.data());
-        glDrawElements(GL_TRIANGLES, sizeof(uint32_t) * oneDimIdxs.size(), GL_UNSIGNED_BYTE, oneDimIdxs.data());
-
-        // glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
-
-        // shader.setVec3("uColor", 0.0f, 0.0f, 1.0f);
-        // glDrawElements(GL_LINES, indices.size(), GL_UNSIGNED_INT, 0);
-
-        shader.setVec3("uColor", 0.0f, 0.0f, 0.0f);
-        glMultiDrawArrays(GL_LINE_LOOP, char_drawing.first.data(), char_drawing.count.data(), char_drawing.seg_count);
+        // shader.setVec3("uColor", 0.0f, 0.0f, 0.0f);
+        // glMultiDrawArrays(GL_LINE_LOOP, char_drawing.first.data(), char_drawing.count.data(), char_drawing.control);
 
         // glBindVertexArray(0); // no need to unbind it every time
 
