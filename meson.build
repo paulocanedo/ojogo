@@ -43,7 +43,8 @@ executable('ojogo', [
 
 executable('freetype', [
     './src/freetype_test.cpp',
-    './src/glad.c'
+    './src/glad.c',
+    './src/engine/text/Glyph.cpp',
   ],
 	link_args: '-ldl',
 	include_directories: incdir,
