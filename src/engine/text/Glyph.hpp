@@ -2,10 +2,7 @@
 
 #include "../../app.hpp"
 
-#include <iostream>
-#include <stdexcept>
-
-#define BEZIER_STEP 0.1f
+#define BEZIER_STEP 1 / 3.0f
 
 class Glyph
 {
@@ -14,7 +11,6 @@ private:
     const FT_ULong &code;
 
     std::vector<std::vector<glm::vec2>> contours;
-    // std::vector<std::vector<glm::vec2>> *contours = new std::vector<std::vector<glm::vec2>>();
 
     void load(const FT_Face &_face, const FT_ULong &_code);
 
@@ -28,10 +24,7 @@ private:
 
 public:
     Glyph(const FT_Face &_face, const FT_ULong &_code) : face(_face), code(_code) {}
-    ~Glyph() {
-        // this->contours->clear();
-        // delete this->contours;
-    }
+    ~Glyph() { }
 
     void parse();
     std::vector<std::vector<glm::vec2>>* getContours();

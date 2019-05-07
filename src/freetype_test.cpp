@@ -1,5 +1,6 @@
 #include "app.hpp"
 #include "include/mapbox/earcut.hpp"
+#include "include/delfrrr/delaunator.hpp"
 #include "engine/text/Glyph.hpp"
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
@@ -55,12 +56,12 @@ int main()
     //   FT_New_Face(ft_library, "/home/paulocanedo/Downloads/fonts/Camouflage Snow Snow.ttf", 0, &face);
     //   FT_New_Face(ft_library, "/home/paulocanedo/Downloads/fonts/Starcraft Normal.ttf", 0, &face);
     //   FT_New_Face(ft_library, "/home/paulocanedo/Downloads/fonts/wetp.ttf", 0, &face);
-    Glyph glyph(face, '?');
+    Glyph glyph(face, '@');
     glyph.parse();
-    // glyph.printTest();
+    glyph.printTest();
 
     std::vector<std::vector<glm::vec2>> *contours = glyph.getContours();
-    std::vector<glm::vec2> contoursPoints;
+    std::vector<Point> contoursPoints;
     std::vector<int> contoursPointsFirst;
     std::vector<int> contoursPointsCount;
 
@@ -68,16 +69,31 @@ int main()
         contoursPointsFirst.push_back(contoursPoints.size());
         contoursPointsCount.push_back(it->size());
 
-        contoursPoints.insert(contoursPoints.end(), it->begin(), it->end());
+        // contoursPoints.insert(contoursPoints.end(), it->begin(), it->end());
+        
+        for(auto it2 = it->begin(); it2 != it->end(); it2++) {
+            contoursPoints.push_back({it2->x, it2->y});
+        }
     }
     float *_contoursPoints = reinterpret_cast<float *>(contoursPoints.data());
     int *_contoursPointsFirst = reinterpret_cast<int *>(contoursPointsFirst.data());
     int *_contoursPointsCount = reinterpret_cast<int *>(contoursPointsCount.data());
 
-    // std::vector<Point> contoursPoints2 = reinterpret_cast<std::vector<Point>>(contoursPoints);
-    std::vector<N> indices = mapbox::earcut<N>(*contours);
-    // printPolygon(char_drawing.data, start1, count1);
-    // printIndices(indices1);
+    std::vector<std::vector<Point>> polygon;
+    // contoursPoints.push_back(contoursPoints.at(0));
+    polygon.push_back(contoursPoints);
+
+    std::cout << "==========================================" << std::endl;
+    for(auto it = contoursPoints.begin(); it != contoursPoints.end(); it++) {
+        std::cout << it->at(0);
+        std::cout << ",";
+        std::cout << it->at(1);
+        std::cout << std::endl;
+    }
+    std::cout << "==========================================" << std::endl;
+    
+    std::vector<N> indices = mapbox::earcut<N>(polygon);
+    // printIndices(indices);
     //--------------------------------------------------------------
 
     // glfw: initialize and configure
@@ -113,12 +129,21 @@ int main()
         return -1;
     }
 
+    // glEnable(GL_DEPTH_TEST);
     glEnable(GL_MULTISAMPLE);
     glEnable(GL_BLEND);
     Shader shader("./shaders/simple.vert", "./shaders/simple.frag");
     glm::mat4 model(1.0f);
     // glm::mat4 projection = glm::ortho(xMin - 100, xMax + 100, yMin - 100, yMax + 100, -1.0f, 1.0f);
     glm::mat4 projection = glm::ortho(-500.0f, 2000.0f, -500.0f, 2000.0f, -1.0f, 1.0f);
+
+    // glm::mat4 model = glm::mat4(1.0f);
+    // glm::mat4 view = glm::mat4(1.0f);
+    // glm::mat4 projection = glm::mat4(1.0f);
+
+    // model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0.5f, 1.0f, 0.0f));
+    // view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+    // projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 
     unsigned int EBO, VBO, VAO;
     glGenVertexArrays(1, &VAO);
@@ -130,8 +155,9 @@ int main()
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(float) * contoursPoints.size() * 2, _contoursPoints, GL_STATIC_DRAW);
 
-    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    // glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * indices.size(), indices.data(), GL_STATIC_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(N) * indices.size(), indices.data(), GL_STATIC_DRAW);
+    // glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(size_t) * triangles->size() * 3, triangles, GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void *)0);
     glEnableVertexAttribArray(0);
@@ -142,10 +168,6 @@ int main()
     // You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
     // VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
     glBindVertexArray(0);
-
-    std::cout << "samples: " << glfwGetWindowAttrib(window, GLFW_SAMPLES) << std::endl;
-    std::cout << "GL_MAJOR: " << glfwGetWindowAttrib(window, GLFW_CONTEXT_VERSION_MAJOR) << std::endl;
-    std::cout << "GL_MINOR: " << glfwGetWindowAttrib(window, GLFW_CONTEXT_VERSION_MINOR) << std::endl;
 
     // uncomment this call to draw in wireframe polygons.
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -161,7 +183,7 @@ int main()
         // render
         // ------
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // draw our first triangle
         // glUseProgram(shaderProgram);
@@ -171,9 +193,10 @@ int main()
 
         glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
 
-        // shader.setVec3("uColor", 0.3f, 0.7f, 0.9f);
+        shader.setVec3("uColor", 0.3f, 0.7f, 0.9f);
         // glMultiDrawElements(GL_TRIANGLES, indices_count.data(), GL_UNSIGNED_INT, elem_values, indices.size());
-        // glDrawElements(GL_TRIANGLES, sizeof(N) * indices.size(), GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, indices.size() * sizeof(N), GL_UNSIGNED_INT, 0);
+        // glDrawElements(GL_TRIANGLES, triangles->size() * 3 * sizeof(size_t), GL_UNSIGNED_INT, 0);
 
         shader.setVec3("uColor", 0.0f, 0.0f, 0.0f);
         glMultiDrawArrays(GL_LINE_LOOP, _contoursPointsFirst, _contoursPointsCount, static_cast<int>(contours->size()));

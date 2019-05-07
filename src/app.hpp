@@ -9,6 +9,7 @@
 #include <GLFW/glfw3.h>
 
 #include <iostream>
+#include <stdexcept>
 #include <string>
 #include <fstream>
 #include <sstream>
