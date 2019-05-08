@@ -14,6 +14,8 @@ using Coord = float;
 using N = uint32_t;
 using Point = std::array<Coord, 2>;
 
+glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, -3000.0f);
+
 void printPolygon(const std::vector<Point> &polygon, const int start, const int count) {
     const int end = start + count;
     std::cout << std::endl;    
@@ -58,39 +60,62 @@ int main()
     //   FT_New_Face(ft_library, "/home/paulocanedo/Downloads/fonts/wetp.ttf", 0, &face);
     Glyph glyph(face, '@');
     glyph.parse();
-    glyph.printTest();
+    // glyph.printTest();
 
-    std::vector<std::vector<glm::vec2>> *contours = glyph.getContours();
-    std::vector<Point> contoursPoints;
+    srand(static_cast<unsigned>(time(0)));
+
+    std::vector<std::vector<glm::vec3>> *contours = glyph.getContours();
+    std::vector<Point> contoursPoints2d;
+    std::vector<glm::vec3> contoursPoints3d;
+    std::vector<glm::vec3> sideFaces;
     std::vector<int> contoursPointsFirst;
     std::vector<int> contoursPointsCount;
 
+
     for(auto it = contours->begin(); it != contours->end(); it++) {
-        contoursPointsFirst.push_back(contoursPoints.size());
+        contoursPointsFirst.push_back(contoursPoints3d.size());
         contoursPointsCount.push_back(it->size());
 
         // contoursPoints.insert(contoursPoints.end(), it->begin(), it->end());
         
         for(auto it2 = it->begin(); it2 != it->end(); it2++) {
-            contoursPoints.push_back({it2->x, it2->y});
+            contoursPoints2d.push_back({it2->x, it2->y});
+            contoursPoints3d.push_back({it2->x, it2->y, it2->z});
+
+            glm::vec3 randomVector(
+                (static_cast<float>((rand() % 10) + 1)),
+                (static_cast<float>((rand() % 10) + 1)),
+                (static_cast<float>((rand() % 10) + 1))
+            );
+            contoursPoints3d.push_back(randomVector);
+
+            sideFaces.push_back({it2->x, it2->y, 0.0f});
+            sideFaces.push_back({it2->x, it2->y, 200.0f});
         }
     }
-    float *_contoursPoints = reinterpret_cast<float *>(contoursPoints.data());
+    float *_sideFaces = reinterpret_cast<float *>(sideFaces.data());
+    float *_contoursPoints = reinterpret_cast<float *>(contoursPoints3d.data());
     int *_contoursPointsFirst = reinterpret_cast<int *>(contoursPointsFirst.data());
     int *_contoursPointsCount = reinterpret_cast<int *>(contoursPointsCount.data());
 
     std::vector<std::vector<Point>> polygon;
     // contoursPoints.push_back(contoursPoints.at(0));
-    polygon.push_back(contoursPoints);
+    polygon.push_back(contoursPoints2d);
+    
+    // for(size_t i=0; i<contoursPoints3d.size() * 3; i++) {
+    //     std::cout << _contoursPoints[i] << ",";
+    //     // if(i % 3 == 0)
+    // }
+    // std::cout << std::endl;
 
-    std::cout << "==========================================" << std::endl;
-    for(auto it = contoursPoints.begin(); it != contoursPoints.end(); it++) {
-        std::cout << it->at(0);
-        std::cout << ",";
-        std::cout << it->at(1);
-        std::cout << std::endl;
-    }
-    std::cout << "==========================================" << std::endl;
+    // std::cout << "==========================================" << std::endl;
+    // for(auto it = contoursPoints2d.begin(); it != contoursPoints2d.end(); it++) {
+    //     std::cout << it->at(0);
+    //     std::cout << ",";
+    //     std::cout << it->at(1);
+    //     std::cout << std::endl;
+    // }
+    // std::cout << "==========================================" << std::endl;
     
     std::vector<N> indices = mapbox::earcut<N>(polygon);
     // printIndices(indices);
@@ -133,17 +158,14 @@ int main()
     glEnable(GL_MULTISAMPLE);
     glEnable(GL_BLEND);
     Shader shader("./shaders/simple.vert", "./shaders/simple.frag");
-    glm::mat4 model(1.0f);
     // glm::mat4 projection = glm::ortho(xMin - 100, xMax + 100, yMin - 100, yMax + 100, -1.0f, 1.0f);
-    glm::mat4 projection = glm::ortho(-500.0f, 2000.0f, -500.0f, 2000.0f, -1.0f, 1.0f);
+    // glm::mat4 projection = glm::ortho(-500.0f, 2000.0f, -500.0f, 2000.0f, -1000.0f, 1000.0f);
 
     // glm::mat4 model = glm::mat4(1.0f);
-    // glm::mat4 view = glm::mat4(1.0f);
-    // glm::mat4 projection = glm::mat4(1.0f);
+    glm::mat4 projection = glm::mat4(1.0f);
 
     // model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0.5f, 1.0f, 0.0f));
-    // view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-    // projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+    projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.0f, 1000.0f);
 
     unsigned int EBO, VBO, VAO;
     glGenVertexArrays(1, &VAO);
@@ -153,14 +175,31 @@ int main()
     glBindVertexArray(VAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * contoursPoints.size() * 2, _contoursPoints, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * contoursPoints3d.size() * 6, _contoursPoints, GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(N) * indices.size(), indices.data(), GL_STATIC_DRAW);
     // glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(size_t) * triangles->size() * 3, triangles, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void *)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)0);
     glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    //-------------------------------------------
+    unsigned int sVBO, sVAO;
+    glGenVertexArrays(1, &sVAO);
+    glGenBuffers(1, &sVBO);
+    // bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
+    glBindVertexArray(sVAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, sVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * sideFaces.size() * 3, _sideFaces, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
+    glEnableVertexAttribArray(0);
+    //-------------------------------------------
 
     // note that this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -170,7 +209,7 @@ int main()
     glBindVertexArray(0);
 
     // uncomment this call to draw in wireframe polygons.
-    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     // render loop
     // -----------
@@ -187,9 +226,21 @@ int main()
 
         // draw our first triangle
         // glUseProgram(shaderProgram);
+        glm::mat4 model(1.0f);
+        glm::mat4 view(1.0f);
+
+        model = glm::rotate(model, glm::radians(-30.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        view = glm::translate(view, cameraPos);
+
         shader.use();
         shader.setMat4("model", model);
+        shader.setMat4("view", view);
         shader.setMat4("projection", projection);
+        shader.setFloat("animation", sin(glfwGetTime()));
+
+        glBindVertexArray(sVAO);
+        shader.setVec3("uColor", 0.3f, 0.7f, 0.9f);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, sideFaces.size());
 
         glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
 
@@ -198,8 +249,15 @@ int main()
         glDrawElements(GL_TRIANGLES, indices.size() * sizeof(N), GL_UNSIGNED_INT, 0);
         // glDrawElements(GL_TRIANGLES, triangles->size() * 3 * sizeof(size_t), GL_UNSIGNED_INT, 0);
 
-        shader.setVec3("uColor", 0.0f, 0.0f, 0.0f);
-        glMultiDrawArrays(GL_LINE_LOOP, _contoursPointsFirst, _contoursPointsCount, static_cast<int>(contours->size()));
+        // shader.setVec3("uColor", 0.0f, 0.0f, 0.0f);
+        // glMultiDrawArrays(GL_LINE_LOOP, _contoursPointsFirst, _contoursPointsCount, static_cast<int>(contours->size()));
+
+        model = glm::translate(model, glm::vec3(0.0f, 0.0f, 200.0f));
+        shader.setMat4("model", model);
+        shader.setVec3("uColor", 0.3f, 0.7f, 0.9f);
+        glDrawElements(GL_TRIANGLES, indices.size() * sizeof(N), GL_UNSIGNED_INT, 0);
+        // shader.setVec3("uColor", 0.0f, 0.0f, 0.0f);
+        // glMultiDrawArrays(GL_LINE_LOOP, _contoursPointsFirst, _contoursPointsCount, static_cast<int>(contours->size()));
 
         glBindVertexArray(0); // no need to unbind it every time
 
@@ -228,6 +286,28 @@ void processInput(GLFWwindow *window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+
+    float cameraSpeed = 10.0f;
+
+    if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+        cameraPos.x -= cameraSpeed;
+
+    if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+        cameraPos.x += cameraSpeed;
+
+    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+        cameraPos.y += cameraSpeed;
+
+    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+        cameraPos.y -= cameraSpeed;
+
+    if (glfwGetKey(window, GLFW_KEY_KP_ADD) == GLFW_PRESS) {
+        cameraPos.z += cameraSpeed * 5.0f;
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_KP_SUBTRACT) == GLFW_PRESS) {
+        cameraPos.z -= cameraSpeed * 5.0f;
+    }
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
