@@ -94,7 +94,7 @@ int main()
     //   FT_New_Face(ft_library, "/home/paulocanedo/Downloads/fonts/Camouflage Snow Snow.ttf", 0, &face);
     //   FT_New_Face(ft_library, "/home/paulocanedo/Downloads/fonts/Starcraft Normal.ttf", 0, &face);
     //   FT_New_Face(ft_library, "/home/paulocanedo/Downloads/fonts/wetp.ttf", 0, &face);
-    Glyph glyph(face, 'E');
+    Glyph glyph(face, '@');
     glyph.parse();
     // glyph.printTest();
 
@@ -135,27 +135,32 @@ int main()
         contoursPoints3d.push_back(glm::vec3(0.0f, 0.0f, 1.0f));
     }
 
-    for(size_t i=0; i<contoursPoints2d.at(0).size() - 1; i++) {
-        Point *p0 = &contoursPoints2d.at(0).at(i + 0);
-        Point *p1 = &contoursPoints2d.at(0).at(i + 1);
+    for(size_t i=0; i<contoursPoints2d.at(0).size(); i++) {
+        Point *pp0 = &contoursPoints2d.at(0).at(i+0);
+        Point *pp1 = &contoursPoints2d.at(0).at(i == contoursPoints2d.at(0).size() -1 ? 0 : i + 1);
+
+        glm::vec3 p1 = glm::vec3(std::get<0>(*pp0), std::get<1>(*pp0), zValue);
+        glm::vec3 p2 = glm::vec3(std::get<0>(*pp0), std::get<1>(*pp0), zValue - 100.0f);
+        glm::vec3 p3 = glm::vec3(std::get<0>(*pp1), std::get<1>(*pp1), zValue);
+        glm::vec3 p4 = glm::vec3(std::get<0>(*pp1), std::get<1>(*pp1), zValue - 100.0f);
+
+        glm::vec3 vp1 = p3 - p1;
+        glm::vec3 vp2 = p4 - p2;
+        // glm::vec3 normal = glm::normalize(glm::cross(vp1, vp2));
         glm::vec3 normal = glm::vec3(0.0f, 1.0f, 0.0f);
-        // glm::vec3 normal = glm::cross(
-        //     glm::vec3(std::get<0>(*p0), std::get<1>(*p0), zValue),
-        //     glm::vec3(std::get<0>(*p0), std::get<1>(*p0), zValue - 100.0f)
-        // );
 
-        contoursPoints3d.push_back(glm::vec3(std::get<0>(*p0), std::get<1>(*p0), zValue));
+        contoursPoints3d.push_back(p1);
         contoursPoints3d.push_back(normal);
-        contoursPoints3d.push_back(glm::vec3(std::get<0>(*p0), std::get<1>(*p0), zValue - 100.0f));
+        contoursPoints3d.push_back(p2);
         contoursPoints3d.push_back(normal);
-        contoursPoints3d.push_back(glm::vec3(std::get<0>(*p1), std::get<1>(*p1), zValue));
+        contoursPoints3d.push_back(p3);
         contoursPoints3d.push_back(normal);
 
-        contoursPoints3d.push_back(glm::vec3(std::get<0>(*p0), std::get<1>(*p0), zValue - 100.0f));
+        contoursPoints3d.push_back(p2);
         contoursPoints3d.push_back(normal);
-        contoursPoints3d.push_back(glm::vec3(std::get<0>(*p1), std::get<1>(*p1), zValue));
+        contoursPoints3d.push_back(p3);
         contoursPoints3d.push_back(normal);
-        contoursPoints3d.push_back(glm::vec3(std::get<0>(*p1), std::get<1>(*p1), zValue - 100.0f));
+        contoursPoints3d.push_back(p4);
         contoursPoints3d.push_back(normal);
     }
 
