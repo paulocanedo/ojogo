@@ -50,7 +50,7 @@ using Coord = float;
 using N = uint32_t;
 using Point = std::array<Coord, 2>;
 
-glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 0.0f);
+glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, -3000.0f);
 glm::vec3 lightPos  = glm::vec3(500.0f, 1000.0f, 1000.0f);
 
 void printPolygon(const std::vector<Point> &polygon, const int start, const int count) {
@@ -94,7 +94,7 @@ int main()
     //   FT_New_Face(ft_library, "/home/paulocanedo/Downloads/fonts/Camouflage Snow Snow.ttf", 0, &face);
     //   FT_New_Face(ft_library, "/home/paulocanedo/Downloads/fonts/Starcraft Normal.ttf", 0, &face);
     //   FT_New_Face(ft_library, "/home/paulocanedo/Downloads/fonts/wetp.ttf", 0, &face);
-    Glyph glyph(face, '@');
+    Glyph glyph(face, 'G');
     glyph.parse();
     // glyph.printTest();
 
@@ -211,8 +211,8 @@ int main()
     glEnable(GL_BLEND);
     Shader shader("./shaders/simple.vert", "./shaders/simple.frag");
 
-    glm::mat4 projection = glm::ortho(-1000.0f, 1000.0f, -1000.0f, 1000.0f, -1000.0f, 1000.0f);
-    // glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.0f, 1000.0f);
+    // glm::mat4 projection = glm::ortho(-1000.0f, 1000.0f, -1000.0f, 1000.0f, -1000.0f, 1000.0f);
+    glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, -100.0f, 1000.0f);
 
     unsigned int /*EBO, */frontVBO, frontVAO;
     glGenVertexArrays(1, &frontVAO);
@@ -265,7 +265,7 @@ int main()
         glm::mat4 model(1.0f);
         glm::mat4 view(1.0f);
 
-        model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0.5f, 1.0f, 0.0f));
+        model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(1.0f, 0.0f, 0.0f));
         // model = glm::rotate(model, glm::radians(-30.0f), glm::vec3(0.5f, 1.0f, 0.0f));
         view = glm::translate(view, cameraPos);
 
