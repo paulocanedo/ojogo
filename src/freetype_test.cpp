@@ -43,14 +43,14 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void processInput(GLFWwindow *window);
 
 // settings
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
+const unsigned int SCR_WIDTH  = 800 * 3;
+const unsigned int SCR_HEIGHT = 600 * 3;
 
 using Coord = float;
 using N = uint32_t;
 using Point = std::array<Coord, 2>;
 
-glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, -3050.0f);
+glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 0.0f);
 glm::vec3 lightPos  = glm::vec3(500.0f, 1000.0f, 1000.0f);
 
 void printPolygon(const std::vector<Point> &polygon, const int start, const int count) {
@@ -88,7 +88,7 @@ int main()
     // For simplicity, use the charmap FreeType provides by default;
     // in most cases this means Unicode.
     FT_Face face;
-    FT_New_Face(ft_library, "/home/paulocanedo/Downloads/fonts/Ubuntu-R.ttf", 0, &face);
+    FT_New_Face(ft_library, "/home/paulocanedo/Development/opengl/Ubuntu-R.ttf", 0, &face);
     //   FT_New_Face(ft_library, "/home/paulocanedo/Downloads/fonts/Txt Regular.ttf", 0, &face);
     //   FT_New_Face(ft_library, "/home/paulocanedo/Downloads/fonts/Air Millhouse Outline.ttf", 0, &face);
     //   FT_New_Face(ft_library, "/home/paulocanedo/Downloads/fonts/Camouflage Snow Snow.ttf", 0, &face);
@@ -133,6 +133,30 @@ int main()
 
         contoursPoints3d.push_back(glm::vec3(std::get<0>(*p), std::get<1>(*p), zValue));
         contoursPoints3d.push_back(glm::vec3(0.0f, 0.0f, 1.0f));
+    }
+
+    for(size_t i=0; i<contoursPoints2d.at(0).size() - 1; i++) {
+        Point *p0 = &contoursPoints2d.at(0).at(i + 0);
+        Point *p1 = &contoursPoints2d.at(0).at(i + 1);
+        glm::vec3 normal = glm::vec3(0.0f, 1.0f, 0.0f);
+        // glm::vec3 normal = glm::cross(
+        //     glm::vec3(std::get<0>(*p0), std::get<1>(*p0), zValue),
+        //     glm::vec3(std::get<0>(*p0), std::get<1>(*p0), zValue - 100.0f)
+        // );
+
+        contoursPoints3d.push_back(glm::vec3(std::get<0>(*p0), std::get<1>(*p0), zValue));
+        contoursPoints3d.push_back(normal);
+        contoursPoints3d.push_back(glm::vec3(std::get<0>(*p0), std::get<1>(*p0), zValue - 100.0f));
+        contoursPoints3d.push_back(normal);
+        contoursPoints3d.push_back(glm::vec3(std::get<0>(*p1), std::get<1>(*p1), zValue));
+        contoursPoints3d.push_back(normal);
+
+        contoursPoints3d.push_back(glm::vec3(std::get<0>(*p0), std::get<1>(*p0), zValue - 100.0f));
+        contoursPoints3d.push_back(normal);
+        contoursPoints3d.push_back(glm::vec3(std::get<0>(*p1), std::get<1>(*p1), zValue));
+        contoursPoints3d.push_back(normal);
+        contoursPoints3d.push_back(glm::vec3(std::get<0>(*p1), std::get<1>(*p1), zValue - 100.0f));
+        contoursPoints3d.push_back(normal);
     }
 
     for(size_t i=0; i<indices.size(); i++) {
@@ -182,7 +206,8 @@ int main()
     glEnable(GL_BLEND);
     Shader shader("./shaders/simple.vert", "./shaders/simple.frag");
 
-    glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.0f, 1000.0f);
+    glm::mat4 projection = glm::ortho(-1000.0f, 1000.0f, -1000.0f, 1000.0f, -1000.0f, 1000.0f);
+    // glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.0f, 1000.0f);
 
     unsigned int /*EBO, */frontVBO, frontVAO;
     glGenVertexArrays(1, &frontVAO);
@@ -236,10 +261,11 @@ int main()
         glm::mat4 view(1.0f);
 
         model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0.5f, 1.0f, 0.0f));
-        // model = glm::rotate(model, glm::radians(-30.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        // model = glm::rotate(model, glm::radians(-30.0f), glm::vec3(0.5f, 1.0f, 0.0f));
         view = glm::translate(view, cameraPos);
 
         shader.use();
+        // shader.setVec3("uColor", 0.9f, 0.35f, 0.3f);
         shader.setVec3("uColor", 0.3f, 0.7f, 0.9f);
         shader.setVec3("uLightColor", 1.0f, 1.0f, 1.0f);
         shader.setVec3("uLightPos", lightPos);
@@ -255,7 +281,7 @@ int main()
 
         // glMultiDrawElements(GL_TRIANGLES, indices_count.data(), GL_UNSIGNED_INT, elem_values, indices.size());
         // glDrawElements(GL_TRIANGLES, indices.size() * sizeof(N), GL_UNSIGNED_INT, 0);
-        glDrawArrays(GL_TRIANGLES, 0, contours->at(0).size() * 6);
+        glDrawArrays(GL_TRIANGLES, 0, (contours->at(0).size()+1) * 18);
 
         glBindVertexArray(0); // no need to unbind it every time
 
