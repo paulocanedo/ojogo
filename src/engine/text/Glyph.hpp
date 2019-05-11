@@ -11,7 +11,7 @@ private:
     const FT_ULong &code;
 
     float zValue = 0.0f;
-    std::vector<std::vector<glm::vec3>> contours;
+    std::vector<std::vector<glm::vec2>> contours;
 
     void load(const FT_Face &_face, const FT_ULong &_code);
 
@@ -28,6 +28,6 @@ public:
     ~Glyph() { }
 
     void parse();
-    std::vector<std::vector<glm::vec3>>* getContours();
+    std::vector<std::vector<glm::vec2>>* getContours();
     void printTest();
 };
