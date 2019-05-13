@@ -2,6 +2,7 @@
 #include "include/mapbox/earcut.hpp"
 #include "include/delfrrr/delaunator.hpp"
 #include "engine/text/Glyph.hpp"
+#include "engine/text/TextTessellation.hpp"
 
 GLenum glCheckError_(const char *file, int line)
 {
@@ -43,8 +44,8 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void processInput(GLFWwindow *window);
 
 // settings
-const unsigned int SCR_WIDTH  = 800 * 3;
-const unsigned int SCR_HEIGHT = 600 * 3;
+const unsigned int SCR_WIDTH  = 800 * 1;
+const unsigned int SCR_HEIGHT = 600 * 1;
 
 using Coord = float;
 using N = uint32_t;
@@ -52,28 +53,6 @@ using Point = std::array<Coord, 2>;
 
 glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, -3000.0f);
 glm::vec3 lightPos  = glm::vec3(500.0f, 1000.0f, 1000.0f);
-
-void printPolygon(const std::vector<Point> &polygon, const int start, const int count) {
-    const int end = start + count;
-    std::cout << std::endl;    
-    for(int i=start, count = 0; i < end; i++, count++) {
-        Point elem = polygon.at(i);
-        std::cout << "(";
-        std::cout << elem[0];
-        std::cout << ',';
-        std::cout << elem[1];
-        std::cout << ");";  
-    }
-    std::cout << std::endl;    
-}
-
-void printIndices(const std::vector<N> &indices) {
-    for(const N &value : indices) {
-        std::cout << value;
-        std::cout << ",";
-    }
-    std::cout << std::endl;
-}
 
 int main()
 {
@@ -88,12 +67,12 @@ int main()
     // For simplicity, use the charmap FreeType provides by default;
     // in most cases this means Unicode.
     FT_Face face;
-    FT_New_Face(ft_library, "/home/paulocanedo/Development/opengl/Ubuntu-R.ttf", 0, &face);
+    FT_New_Face(ft_library, "/home/paulocanedo/Downloads/fonts/Ubuntu-R.ttf", 0, &face);
     //   FT_New_Face(ft_library, "/home/paulocanedo/Downloads/fonts/Txt Regular.ttf", 0, &face);
     //   FT_New_Face(ft_library, "/home/paulocanedo/Downloads/fonts/Air Millhouse Outline.ttf", 0, &face);
     //   FT_New_Face(ft_library, "/home/paulocanedo/Downloads/fonts/Camouflage Snow Snow.ttf", 0, &face);
     //   FT_New_Face(ft_library, "/home/paulocanedo/Downloads/fonts/Starcraft Normal.ttf", 0, &face);
-    //   FT_New_Face(ft_library, "/home/paulocanedo/Downloads/fonts/wetp.ttf", 0, &face);
+    //   FT_New_Face(ft_library, "/home/paulocanedo/Downloads/fonts/wetpm.ttf", 0, &face);
     Glyph glyph(face, 'G');
     glyph.parse();
     // glyph.printTest();
@@ -101,76 +80,9 @@ int main()
     srand(static_cast<unsigned>(time(0)));
 
     std::vector<std::vector<glm::vec2>> *contours = glyph.getContours();
-    std::vector<std::vector<Point>> contoursPoints2d;
-    std::vector<glm::vec3> contoursPoints3d;
-    // std::vector<glm::vec3> sideFaces;
 
-    float zValue = 0.0f;
-    for(auto it = contours->begin(); it != contours->end(); it++) {
-        std::vector<Point> points2d;
-
-        for(size_t i=0; i< it->size(); i++) {
-            // glm::vec3 point = glm::vec3(it->at(i), zValue);
-            // glm::vec3 nextPoint = glm::vec3(it->at(i + 1 == it->size() ? 0 : i + 1), zValue);
-
-            // contoursPoints3d.push_back(point);
-            // contoursPoints3d.push_back({0.0f, 0.0f, 1.0f});
-
-            points2d.push_back({it->at(i).x, it->at(i).y});
-        }
-
-        contoursPoints2d.push_back(points2d);
-    }
-
-    std::vector<std::vector<Point>> polygon;
-    polygon.push_back(contoursPoints2d.at(0));
-
-    std::vector<N> indices = mapbox::earcut<N>(polygon);
-
-    for(size_t i=0; i<indices.size(); i++) {
-        N index = indices[i];
-        Point *p = &contoursPoints2d.at(0).at(index);
-
-        contoursPoints3d.push_back(glm::vec3(std::get<0>(*p), std::get<1>(*p), zValue));
-        contoursPoints3d.push_back(glm::vec3(0.0f, 0.0f, 1.0f));
-    }
-
-    for(size_t i=0; i<contoursPoints2d.at(0).size(); i++) {
-        Point *pp0 = &contoursPoints2d.at(0).at(i+0);
-        Point *pp1 = &contoursPoints2d.at(0).at(i == contoursPoints2d.at(0).size() -1 ? 0 : i + 1);
-
-        glm::vec3 p1 = glm::vec3(std::get<0>(*pp0), std::get<1>(*pp0), zValue);
-        glm::vec3 p2 = glm::vec3(std::get<0>(*pp0), std::get<1>(*pp0), zValue - 100.0f);
-        glm::vec3 p3 = glm::vec3(std::get<0>(*pp1), std::get<1>(*pp1), zValue);
-        glm::vec3 p4 = glm::vec3(std::get<0>(*pp1), std::get<1>(*pp1), zValue - 100.0f);
-
-        glm::vec3 vp1 = p3 - p1;
-        glm::vec3 vp2 = p4 - p2;
-        // glm::vec3 normal = glm::normalize(glm::cross(vp1, vp2));
-        glm::vec3 normal = glm::vec3(0.0f, 1.0f, 0.0f);
-
-        contoursPoints3d.push_back(p1);
-        contoursPoints3d.push_back(normal);
-        contoursPoints3d.push_back(p2);
-        contoursPoints3d.push_back(normal);
-        contoursPoints3d.push_back(p3);
-        contoursPoints3d.push_back(normal);
-
-        contoursPoints3d.push_back(p2);
-        contoursPoints3d.push_back(normal);
-        contoursPoints3d.push_back(p3);
-        contoursPoints3d.push_back(normal);
-        contoursPoints3d.push_back(p4);
-        contoursPoints3d.push_back(normal);
-    }
-
-    for(size_t i=0; i<indices.size(); i++) {
-        N index = indices[i];
-        Point *p = &contoursPoints2d.at(0).at(index);
-
-        contoursPoints3d.push_back(glm::vec3(std::get<0>(*p), std::get<1>(*p), zValue - 100.0f));
-        contoursPoints3d.push_back(glm::vec3(0.0f, 0.0f, 1.0f));
-    }
+    TextTessellation tt;
+    std::vector<glm::vec3> contoursPoints3d = tt.tessellate(*contours, 100.0f);
     //--------------------------------------------------------------
 
     // glfw: initialize and configure
@@ -260,17 +172,13 @@ int main()
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // draw our first triangle
-        // glUseProgram(shaderProgram);
         glm::mat4 model(1.0f);
         glm::mat4 view(1.0f);
 
         model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(1.0f, 0.0f, 0.0f));
-        // model = glm::rotate(model, glm::radians(-30.0f), glm::vec3(0.5f, 1.0f, 0.0f));
         view = glm::translate(view, cameraPos);
 
         shader.use();
-        // shader.setVec3("uColor", 0.9f, 0.35f, 0.3f);
         shader.setVec3("uColor", 0.3f, 0.7f, 0.9f);
         shader.setVec3("uLightColor", 1.0f, 1.0f, 1.0f);
         shader.setVec3("uLightPos", lightPos);
@@ -279,14 +187,11 @@ int main()
         shader.setMat4("projection", projection);
         shader.setFloat("animation", sin(glfwGetTime()));
 
-        // glBindVertexArray(sVAO);
-        // glDrawArrays(GL_TRIANGLE_STRIP, 0, contours->at(0).size() << 1);
-
         glBindVertexArray(frontVAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
 
-        // glMultiDrawElements(GL_TRIANGLES, indices_count.data(), GL_UNSIGNED_INT, elem_values, indices.size());
-        // glDrawElements(GL_TRIANGLES, indices.size() * sizeof(N), GL_UNSIGNED_INT, 0);
-        glDrawArrays(GL_TRIANGLES, 0, (contours->at(0).size()+1) * 18);
+        // (x, n, y, n, z, n) 2x
+        // 6 * 2 = 12
+        glDrawArrays(GL_TRIANGLES, 0, (contours->at(0).size()+1) * 12);
 
         glBindVertexArray(0); // no need to unbind it every time
 
@@ -303,11 +208,8 @@ int main()
     // glDeleteBuffers(1, &EBO);
     glDeleteBuffers(1, &frontVBO);
 
-    // glfw: terminate, clearing all previously allocated GLFW resources.
-    // ------------------------------------------------------------------
-    glfwTerminate();
-
     FT_Done_FreeType(ft_library);
+    glfwTerminate();
     return 0;
 }
 

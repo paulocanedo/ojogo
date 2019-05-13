@@ -45,6 +45,7 @@ executable('freetype', [
     './src/freetype_test.cpp',
     './src/glad.c',
     './src/engine/text/Glyph.cpp',
+    './src/engine/text/TextTessellation.cpp',
   ],
 	link_args: '-ldl',
 	include_directories: incdir,
