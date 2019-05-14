@@ -47,9 +47,9 @@ void processInput(GLFWwindow *window);
 const unsigned int SCR_WIDTH  = 800 * 1;
 const unsigned int SCR_HEIGHT = 600 * 1;
 
-using Coord = float;
-using N = uint32_t;
-using Point = std::array<Coord, 2>;
+// using Coord = float;
+// using N = uint32_t;
+// using Point = std::array<Coord, 2>;
 
 glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, -3000.0f);
 glm::vec3 lightPos  = glm::vec3(500.0f, 1000.0f, 1000.0f);
@@ -73,16 +73,26 @@ int main()
     //   FT_New_Face(ft_library, "/home/paulocanedo/Downloads/fonts/Camouflage Snow Snow.ttf", 0, &face);
     //   FT_New_Face(ft_library, "/home/paulocanedo/Downloads/fonts/Starcraft Normal.ttf", 0, &face);
     //   FT_New_Face(ft_library, "/home/paulocanedo/Downloads/fonts/wetpm.ttf", 0, &face);
-    Glyph glyph(face, 'G');
-    glyph.parse();
-    // glyph.printTest();
+
+    std::string text = "paulo?";
+    // std::string text = "Paulo";
+    std::vector<Glyph> visualText;
+
+    for(auto it = text.begin(); it != text.end(); it++) {
+        unsigned long character = *it;
+        Glyph glyph(face, character);
+        visualText.push_back(glyph);
+    }
+
+    // Glyph glyph(face, 'G');
+    // Glyph glyph2(face, 'H');
 
     srand(static_cast<unsigned>(time(0)));
 
-    std::vector<std::vector<glm::vec2>> *contours = glyph.getContours();
+    // const std::vector<std::vector<glm::vec2>> *contours = glyph.getContours();
 
-    TextTessellation tt;
-    std::vector<glm::vec3> contoursPoints3d = tt.tessellate(*contours, 100.0f);
+    // TextTessellation tt;
+    // std::vector<glm::vec3> contoursPoints3d = tt.tessellate(*contours, 100.0f);
     //--------------------------------------------------------------
 
     // glfw: initialize and configure
@@ -126,35 +136,13 @@ int main()
     // glm::mat4 projection = glm::ortho(-1000.0f, 1000.0f, -1000.0f, 1000.0f, -1000.0f, 1000.0f);
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, -100.0f, 1000.0f);
 
-    unsigned int /*EBO, */frontVBO, frontVAO;
-    glGenVertexArrays(1, &frontVAO);
-    glGenBuffers(1, &frontVBO);
-    // glGenBuffers(1, &EBO);
-    // bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
-    glBindVertexArray(frontVAO);
+    for(auto it = visualText.begin(); it != visualText.end(); it++)
+    {
+        it->gpuUpload();
+    }
+    // glyph.gpuUpload();
+    // glyph2.gpuUpload();
 
-    float *_contoursPoints = reinterpret_cast<float *>(contoursPoints3d.data());
-    glBindBuffer(GL_ARRAY_BUFFER, frontVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * contoursPoints3d.size() * 3, _contoursPoints, GL_STATIC_DRAW);
-
-    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    // glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(N) * indices.size(), indices.data(), GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)0);
-    glEnableVertexAttribArray(0);
-
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-    //-------------------------------------------
-    
-    //-------------------------------------------
-
-    // note that this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-    // You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
-    // VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
-    glBindVertexArray(0);
 
     // uncomment this call to draw in wireframe polygons.
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -187,13 +175,13 @@ int main()
         shader.setMat4("projection", projection);
         shader.setFloat("animation", sin(glfwGetTime()));
 
-        glBindVertexArray(frontVAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
+        for (auto it = visualText.begin(); it != visualText.end(); it++)
+        {    
+            shader.setMat4("model", model);
+            it->gpuDraw();
+            model = glm::translate(model, glm::vec3(800.0f, 0.0f, 0.0f));
+        }
 
-        // (x, n, y, n, z, n) 2x
-        // 6 * 2 = 12
-        glDrawArrays(GL_TRIANGLES, 0, (contours->at(0).size()+1) * 12);
-
-        glBindVertexArray(0); // no need to unbind it every time
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
@@ -202,11 +190,10 @@ int main()
         // glCheckError();
     }
 
-    // optional: de-allocate all resources once they've outlived their purpose:
-    // ------------------------------------------------------------------------
-    glDeleteVertexArrays(1, &frontVAO);
-    // glDeleteBuffers(1, &EBO);
-    glDeleteBuffers(1, &frontVBO);
+    for (auto it = visualText.begin(); it != visualText.end(); it++)
+    {
+        it->gpuFreeResources();
+    }
 
     FT_Done_FreeType(ft_library);
     glfwTerminate();

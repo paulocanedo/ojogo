@@ -44,8 +44,58 @@ void Glyph::parse()
     // float yMax = boundingBox.yMax;
 }
 
-std::vector<std::vector<glm::vec2>> *Glyph::getContours() {
+const std::vector<std::vector<glm::vec2>> *Glyph::getContours()
+{
     return &(this->contours);
+}
+
+void Glyph::gpuUpload()
+{
+    TextTessellation tt;
+    tt.tessellate(this->contours, 100.0f, this->contoursPoints3d);
+
+    glGenVertexArrays(1, &this->vao);
+    glGenBuffers(1, &this->vbo);
+
+    glBindVertexArray(this->vao);
+
+    float *_contoursPoints = reinterpret_cast<float *>(contoursPoints3d.data());
+    glBindBuffer(GL_ARRAY_BUFFER, this->vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * contoursPoints3d.size() * 3, _contoursPoints, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)0);
+    glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    // glBindBuffer(GL_ARRAY_BUFFER, 0);
+    // glBindVertexArray(0);
+}
+
+void Glyph::gpuDraw()
+{
+    glBindVertexArray(this->vao);
+
+    // (x, n, y, n, z, n) 2x
+    // 6 * 2 = 12
+    // glDrawArrays(GL_TRIANGLES, 0, (contours->at(0).size() + 1) * 12);
+
+    int count = this->contoursPoints3d.size() / 2;
+    glDrawArrays(GL_TRIANGLES, 0, count);
+}
+
+void Glyph::gpuFreeResources()
+{
+    if (this->vbo > 0)
+    {
+        glDeleteBuffers(1, &this->vbo);
+    }
+
+    if (this->vao > 0)
+    {
+        glDeleteVertexArrays(1, &this->vao);
+    }
 }
 
 void Glyph::printTest()
