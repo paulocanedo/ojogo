@@ -1,115 +1,122 @@
 #include "TextTessellation.hpp"
 
-std::vector<std::vector<Point>> TextTessellation::convertToPoint2D(const std::vector<std::vector<glm::vec2>> &contours)
-{
-    std::vector<std::vector<Point>> contoursPoints2d;
-    for (auto it = contours.begin(); it != contours.end(); it++)
-    {
-        std::vector<Point> points2d;
-
-        for (size_t i = 0; i < it->size(); i++)
-        {
-            points2d.push_back({it->at(i).x, it->at(i).y});
-        }
-
-        contoursPoints2d.push_back(points2d);
-    }
-
-    return contoursPoints2d;
-}
-
-void TextTessellation::fillFrontFace(const std::vector<N> &indices,
-                                     const std::vector<Point> &contourPoints2d,
+void TextTessellation::fillFrontFace(const std::vector<unsigned int> &indices,
+                                     const std::vector<glm::vec2> &contourPoints2d,
                                      const float zValue,
                                      std::vector<glm::vec3> &result)
 {
     for (size_t i = 0; i < indices.size(); i++)
     {
-        N index = indices[i];
-        const Point *p = &contourPoints2d.at(index);
+        unsigned int index = indices[i];
+        const glm::vec2 *p = &contourPoints2d.at(index);
         const glm::vec3 normal = glm::vec3(0.0f, 0.0f, 1.0f);
 
-        result.push_back(glm::vec3(std::get<0>(*p), std::get<1>(*p), zValue));
+        result.push_back(glm::vec3(*p, zValue));
         result.push_back(normal);
     }
 }
 
-void TextTessellation::fillSideFace(const std::vector<N> &indices,
-                                    const std::vector<Point> &contourPoints2d,
+void TextTessellation::fillSideFace(const std::vector<std::vector<glm::vec2>> &contoursPoints2d,
                                     const float zValue1,
                                     const float zValue2,
                                     std::vector<glm::vec3> &result)
 {
-    const int n = contourPoints2d.size() - 1;
-    for (size_t i = 0; i < contourPoints2d.size(); i++)
+    for (auto it = contoursPoints2d.begin(); it != contoursPoints2d.end(); it++)
     {
-        const Point *pp0 = &contourPoints2d.at(i + 0);
-        const Point *pp1 = &contourPoints2d.at((i + 1) % n);
 
-        glm::vec3 p1 = glm::vec3(std::get<0>(*pp0), std::get<1>(*pp0), zValue1);
-        glm::vec3 p2 = glm::vec3(std::get<0>(*pp0), std::get<1>(*pp0), zValue2);
-        glm::vec3 p3 = glm::vec3(std::get<0>(*pp1), std::get<1>(*pp1), zValue1);
-        glm::vec3 p4 = glm::vec3(std::get<0>(*pp1), std::get<1>(*pp1), zValue2);
+        const int n = it->size() - 1;
+        for (size_t i = 0; i < it->size(); i++)
+        {
+            const glm::vec2 *pp0 = &it->at((i + 0) % n);
+            const glm::vec2 *pp1 = &it->at((i + 1) % n);
 
-        glm::vec3 vp1 = p2 - p1;
-        glm::vec3 vp2 = p3 - p2;
-        glm::vec3 normal = glm::normalize(glm::cross(vp1, vp2));
-        // glm::vec3 normal = glm::vec3(0.0f, 1.0f, 0.0f);
+            glm::vec3 p1 = glm::vec3((*pp0).x, (*pp0).y, zValue1);
+            glm::vec3 p2 = glm::vec3((*pp0).x, (*pp0).y, zValue2);
+            glm::vec3 p3 = glm::vec3((*pp1).x, (*pp1).y, zValue1);
+            glm::vec3 p4 = glm::vec3((*pp1).x, (*pp1).y, zValue2);
 
-        result.push_back(p1);
-        result.push_back(normal);
-        result.push_back(p2);
-        result.push_back(normal);
-        result.push_back(p3);
-        result.push_back(normal);
+            glm::vec3 vp1 = p2 - p1;
+            glm::vec3 vp2 = p3 - p2;
+            glm::vec3 normal = glm::normalize(glm::cross(vp1, vp2));
+            // glm::vec3 normal = glm::vec3(0.0f, 1.0f, 0.0f);
 
-        result.push_back(p2);
-        result.push_back(normal);
-        result.push_back(p3);
-        result.push_back(normal);
-        result.push_back(p4);
-        result.push_back(normal);
+            result.push_back(p1);
+            result.push_back(normal);
+            result.push_back(p2);
+            result.push_back(normal);
+            result.push_back(p3);
+            result.push_back(normal);
+
+            result.push_back(p2);
+            result.push_back(normal);
+            result.push_back(p3);
+            result.push_back(normal);
+            result.push_back(p4);
+            result.push_back(normal);
+        }
     }
 }
 
-bool TextTessellation::isOverlay(const std::vector<Point> polygon1, const std::vector<Point> polygon2)
+bool TextTessellation::isOverlay(const std::vector<glm::vec2> polygon1, const std::vector<glm::vec2> polygon2)
 {
-    const Point *p0 = &polygon1.at(0);
-    const float px0 = std::get<0>(*p0);
-    const float py0 = std::get<1>(*p0);
+    const glm::vec2 *p0 = &polygon1.at(0);
+    const float px0 = (*p0).x;
+    const float py0 = (*p0).y;
 
     float minX = -999999.0f, maxX = 999999.0f, minY = -999999.0f, maxY = 999999.0f;
-    for(auto it = polygon2.begin(); it != polygon2.end(); it++)
+    for (auto it = polygon2.begin(); it != polygon2.end(); it++)
     {
-        const float px = std::get<0>(*it);
-        const float py = std::get<1>(*it);
+        const float px = (*it).x;
+        const float py = (*it).y;
 
-        minX = std::min(minX, px);
-        minY = std::min(minY, py);
-        maxX = std::max(maxX, px);
-        maxY = std::max(maxY, py);
+        minX = std::min(maxX, px);
+        minY = std::min(maxY, py);
+        maxX = std::max(minX, px);
+        maxY = std::max(minY, py);
     }
-    return (px0 > minX) && (px0 < maxX) && (py0 > minY) && (py0 < maxY);
+    return (px0 >= minX) && (px0 <= maxX) && (py0 >= minY) && (py0 <= maxY);
 }
 
 void TextTessellation::tessellate(const std::vector<std::vector<glm::vec2>> &contours,
                                   const float depth,
                                   std::vector<glm::vec3> &result)
 {
-    std::vector<std::vector<Point>> contoursPoints2d = this->convertToPoint2D(contours);
     const float zValue1 = 0.0f;
     const float zValue2 = zValue1 + depth;
 
-    std::vector<std::vector<Point>> polygon;
-    for (auto it = contoursPoints2d.begin(); it != contoursPoints2d.end(); it++)
-    {
-        
-        polygon.clear();
-        polygon.push_back(*it);
+    std::vector<glm::vec2> plain;
+    std::vector<std::vector<glm::vec2>> polygon;
 
-        std::vector<N> indices = mapbox::earcut<N>(polygon);
-        this->fillFrontFace(indices, *it, zValue1, result);
-        this->fillSideFace(indices, *it, zValue1, zValue2, result);
-        this->fillFrontFace(indices, *it, zValue2, result);
+    std::vector<glm::vec2> c0 = contours.at(0);
+    std::vector<glm::vec2> c1 = contours.at(1);
+
+    bool flag0 = this->isOverlay(c0, c1);
+    bool flag1 = this->isOverlay(c1, c0);
+
+    std::cout << "flag0: " << flag0 << std::endl;
+    std::cout << "flag1: " << flag1 << std::endl;
+
+
+    // std::cout << "contours.size: " << contours.size() << std::endl;
+    // polygon.push_back(contours.at(1));
+    // plain = contours.at(1);
+
+    for (auto it = contours.begin(); it != contours.end(); it++)
+    {
+
+        // polygon.clear();
+        polygon.push_back(*it);
+        plain.insert(plain.end(), it->begin(), it->end());
+        // std::cout << "it->size: " << it->size() << std::endl;
+        // for(auto it2 = it->begin(); it2 != it->end(); it2++)
+        // {
+        //     plain.push_back(*it2);
+        // }
+        // break;
     }
+
+    std::vector<unsigned int> indices = mapbox::earcut<unsigned int>(polygon);
+    this->fillFrontFace(indices, plain, zValue1, result);
+    this->fillSideFace(contours, zValue1, zValue2, result);
+    this->fillFrontFace(indices, plain, zValue2, result);
 }

@@ -3,9 +3,30 @@
 #include "../../app.hpp"
 #include "../../../include/mapbox/earcut.hpp"
 
-using Coord = float;
-using N = uint32_t;
-using Point = std::array<Coord, 2>;
+namespace mapbox
+{
+namespace util
+{
+
+template <>
+struct nth<0, glm::vec2>
+{
+    inline static auto get(const glm::vec2 &t)
+    {
+        return t.x;
+    };
+};
+template <>
+struct nth<1, glm::vec2>
+{
+    inline static auto get(const glm::vec2 &t)
+    {
+        return t.y;
+    };
+};
+
+} // namespace util
+} // namespace mapbox
 
 class TextTessellation
 {
@@ -18,16 +39,14 @@ public:
                     std::vector<glm::vec3> &result);
 
 private:
-    std::vector<std::vector<Point>> convertToPoint2D(const std::vector<std::vector<glm::vec2>> &contours);
-    bool isOverlay(const std::vector<Point> polygon1, const std::vector<Point> polygon2);
+    bool isOverlay(const std::vector<glm::vec2> polygon1, const std::vector<glm::vec2> polygon2);
 
-    void fillFrontFace(const std::vector<N> &indices,
-                       const std::vector<Point> &contoursPoints2d,
+    void fillFrontFace(const std::vector<unsigned int> &indices,
+                       const std::vector<glm::vec2> &contoursPoints2d,
                        const float zValue,
                        std::vector<glm::vec3> &result);
 
-    void fillSideFace(const std::vector<N> &indices,
-                      const std::vector<Point> &contoursPoints2d,
+    void fillSideFace(const std::vector<std::vector<glm::vec2>> &contoursPoints2d,
                       const float zValue1,
                       const float zValue2,
                       std::vector<glm::vec3> &result);
