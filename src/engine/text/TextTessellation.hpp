@@ -39,7 +39,10 @@ public:
                     std::vector<glm::vec3> &result);
 
 private:
-    bool isOverlay(const std::vector<glm::vec2> polygon1, const std::vector<glm::vec2> polygon2);
+    bool isOverlay(const std::vector<glm::vec2> &polygon1, const std::vector<glm::vec2> &polygon2);
+    std::vector<std::vector<glm::vec2>> prepareForTriangulation(const std::vector<std::vector<glm::vec2>> &input);
+    std::vector<glm::vec2> mergePolygons(const std::vector<glm::vec2> polygon1,
+                                         const std::vector<glm::vec2> polygon2);
 
     void fillFrontFace(const std::vector<unsigned int> &indices,
                        const std::vector<glm::vec2> &contoursPoints2d,

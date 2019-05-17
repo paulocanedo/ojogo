@@ -74,7 +74,7 @@ int main()
     //   FT_New_Face(ft_library, "/home/paulocanedo/Downloads/fonts/Starcraft Normal.ttf", 0, &face);
     //   FT_New_Face(ft_library, "/home/paulocanedo/Downloads/fonts/wetpm.ttf", 0, &face);
 
-    std::string text = "a@?";
+    std::string text = "@";
     // std::string text = "Paulo";
     std::vector<Glyph> visualText;
 

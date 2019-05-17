@@ -57,24 +57,51 @@ void TextTessellation::fillSideFace(const std::vector<std::vector<glm::vec2>> &c
     }
 }
 
-bool TextTessellation::isOverlay(const std::vector<glm::vec2> polygon1, const std::vector<glm::vec2> polygon2)
+bool TextTessellation::isOverlay(const std::vector<glm::vec2> &polygon1, const std::vector<glm::vec2> &polygon2)
 {
     const glm::vec2 *p0 = &polygon1.at(0);
-    const float px0 = (*p0).x;
-    const float py0 = (*p0).y;
+    const float px0 = p0->x;
+    const float py0 = p0->y;
 
-    float minX = -999999.0f, maxX = 999999.0f, minY = -999999.0f, maxY = 999999.0f;
+    float minX = 999999.0f, maxX = -999999.0f, minY = 999999.0f, maxY = -999999.0f;
     for (auto it = polygon2.begin(); it != polygon2.end(); it++)
     {
-        const float px = (*it).x;
-        const float py = (*it).y;
+        const float px = it->x;
+        const float py = it->y;
 
-        minX = std::min(maxX, px);
-        minY = std::min(maxY, py);
-        maxX = std::max(minX, px);
-        maxY = std::max(minY, py);
+        minX = std::min(minX, px);
+        minY = std::min(minY, py);
+        maxX = std::max(maxX, px);
+        maxY = std::max(maxY, py);
     }
     return (px0 >= minX) && (px0 <= maxX) && (py0 >= minY) && (py0 <= maxY);
+}
+
+std::vector<std::vector<glm::vec2>> TextTessellation::prepareForTriangulation(const std::vector<std::vector<glm::vec2>> &input)
+{
+    if (input.size() == 1)
+        return input;
+
+    std::vector<std::vector<glm::vec2>> result = input;
+    std::vector<glm::vec2> poly1 = input.at(0);
+    std::vector<glm::vec2> poly2 = input.at(1);
+
+    if (this->isOverlay(poly1, poly2))
+    {
+        std::reverse(result.begin(), result.end());
+    }
+    
+    return result;
+}
+
+std::vector<glm::vec2> TextTessellation::mergePolygons(const std::vector<glm::vec2> polygon1,
+                                                       const std::vector<glm::vec2> polygon2)
+{
+    std::vector<glm::vec2> result;
+    result.insert(result.end(), polygon1.begin(), polygon1.end());
+    result.insert(result.end(), polygon2.begin(), polygon2.end());
+
+    return result;
 }
 
 void TextTessellation::tessellate(const std::vector<std::vector<glm::vec2>> &contours,
@@ -86,35 +113,14 @@ void TextTessellation::tessellate(const std::vector<std::vector<glm::vec2>> &con
 
     std::vector<glm::vec2> plain;
     std::vector<std::vector<glm::vec2>> polygon;
-
-    std::vector<glm::vec2> c0 = contours.at(0);
-    std::vector<glm::vec2> c1 = contours.at(1);
-
-    bool flag0 = this->isOverlay(c0, c1);
-    bool flag1 = this->isOverlay(c1, c0);
-
-    std::cout << "flag0: " << flag0 << std::endl;
-    std::cout << "flag1: " << flag1 << std::endl;
-
-
-    // std::cout << "contours.size: " << contours.size() << std::endl;
-    // polygon.push_back(contours.at(1));
-    // plain = contours.at(1);
-
-    for (auto it = contours.begin(); it != contours.end(); it++)
+    // std::vector<std::vector<glm::vec2>> preparedContours = contours;
+    std::vector<std::vector<glm::vec2>> preparedContours = this->prepareForTriangulation(contours);
+    for (auto it = preparedContours.begin(); it != preparedContours.end(); it++)
     {
-
         // polygon.clear();
         polygon.push_back(*it);
         plain.insert(plain.end(), it->begin(), it->end());
-        // std::cout << "it->size: " << it->size() << std::endl;
-        // for(auto it2 = it->begin(); it2 != it->end(); it2++)
-        // {
-        //     plain.push_back(*it2);
-        // }
-        // break;
     }
-
     std::vector<unsigned int> indices = mapbox::earcut<unsigned int>(polygon);
     this->fillFrontFace(indices, plain, zValue1, result);
     this->fillSideFace(contours, zValue1, zValue2, result);
