@@ -67,7 +67,7 @@ int main()
     //   FT_New_Face(ft_library, "/home/paulocanedo/Downloads/fonts/Starcraft Normal.ttf", 0, &face);
     //   FT_New_Face(ft_library, "/home/paulocanedo/Downloads/fonts/wetpm.ttf", 0, &face);
 
-    std::wstring text = L"Olá mundo 3D!";
+    std::wstring text = L"@ Olá mundo 3D!";
 
     std::vector<Glyph> visualText;
 
@@ -145,7 +145,7 @@ int main()
         glm::mat4 model(1.0f);
         glm::mat4 view(1.0f);
 
-        // model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(1.0f, 0.0f, 0.0f));
+        model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(1.0f, 0.0f, 0.0f));
         view = glm::translate(view, cameraPos);
 
         shader.use();
@@ -156,6 +156,7 @@ int main()
         shader.setMat4("view", view);
         shader.setMat4("projection", projection);
         shader.setFloat("animation", sin(glfwGetTime()));
+        shader.setVec3("uViewPos", cameraPos);
 
         for (auto it = visualText.begin(); it != visualText.end(); it++)
         {
