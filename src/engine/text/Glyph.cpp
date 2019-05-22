@@ -38,12 +38,10 @@ void Glyph::parse()
     FT_BBox boundingBox;
     FT_Outline_Get_BBox(&outline, &boundingBox);
 
-    this->advance.x = boundingBox.xMax - boundingBox.xMin;
-    this->advance.y = boundingBox.yMax - boundingBox.yMin;
-    // float xMin = boundingBox.xMin;
-    // float yMin = boundingBox.yMin;
-    // float xMax = boundingBox.xMax;
-    // float yMax = boundingBox.yMax;
+    this->advance.x = slot->advance.x;
+    this->advance.y = slot->advance.y;
+    // this->advance.x = boundingBox.xMax - boundingBox.xMin;
+    // this->advance.y = boundingBox.yMax - boundingBox.yMin;
 }
 
 const std::vector<std::vector<glm::vec2>> *Glyph::getContours()
@@ -53,6 +51,9 @@ const std::vector<std::vector<glm::vec2>> *Glyph::getContours()
 
 void Glyph::gpuUpload()
 {
+    if (this->contours.size() == 0)
+        return;
+
     TextTessellation tt;
     tt.tessellate(this->contours, 100.0f, this->contoursPoints3d);
 
@@ -78,10 +79,6 @@ void Glyph::gpuUpload()
 void Glyph::gpuDraw()
 {
     glBindVertexArray(this->vao);
-
-    // (x, n, y, n, z, n) 2x
-    // 6 * 2 = 12
-    // glDrawArrays(GL_TRIANGLES, 0, (contours->at(0).size() + 1) * 12);
 
     int count = this->contoursPoints3d.size() / 2;
     glDrawArrays(GL_TRIANGLES, 0, count);

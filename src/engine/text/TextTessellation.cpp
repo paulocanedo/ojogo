@@ -188,35 +188,4 @@ void TextTessellation::tessellate(const std::vector<std::vector<glm::vec2>> &con
         this->fillSideFace(contours, zValue1, zValue2, result);
         this->fillFrontFace(indices, *it, zValue2, result);
     }
-
-    // for (auto it = classifiedContours.begin(); it != classifiedContours.end(); it++)
-    // {
-    //     bool overlays = it->first;
-    //     std::vector<glm::vec2> contour = it->second;
-    //     if (!overlays)
-    //     {
-
-    //     }
-    //     else
-    //     {
-    //         polygon.push_back(contour);
-    //         plain.insert(plain.end(), contour.begin(), contour.end());
-    //     }
-    //     std::vector<unsigned int> indices = mapbox::earcut<unsigned int>(polygon);
-    //     this->fillFrontFace(indices, plain, zValue1, result);
-    //     this->fillSideFace(contours, zValue1, zValue2, result);
-    //     this->fillFrontFace(indices, plain, zValue2, result);
-    // }
-
-    // std::vector<std::vector<glm::vec2>> preparedContours = this->prepareForTriangulation(contours);
-    // for (auto it = preparedContours.begin(); it != preparedContours.end(); it++)
-    // {
-    //     // polygon.clear();
-    //     polygon.push_back(*it);
-    //     plain.insert(plain.end(), it->begin(), it->end());
-    // }
-    // std::vector<unsigned int> indices = mapbox::earcut<unsigned int>(polygon);
-    // this->fillFrontFace(indices, plain, zValue1, result);
-    // this->fillSideFace(contours, zValue1, zValue2, result);
-    // this->fillFrontFace(indices, plain, zValue2, result);
 }

@@ -34,7 +34,7 @@ struct nth<1, glm::vec2>
 class TextTessellation
 {
 public:
-    TextTessellation() {}
+    TextTessellation() { srand(static_cast<unsigned>(time(0))); }
     ~TextTessellation() {}
 
     void tessellate(const std::vector<std::vector<glm::vec2>> &contours,

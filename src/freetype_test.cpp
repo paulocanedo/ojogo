@@ -1,8 +1,5 @@
 #include "app.hpp"
-#include "include/mapbox/earcut.hpp"
-#include "include/delfrrr/delaunator.hpp"
 #include "engine/text/Glyph.hpp"
-#include "engine/text/TextTessellation.hpp"
 
 GLenum glCheckError_(const char *file, int line)
 {
@@ -44,15 +41,11 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void processInput(GLFWwindow *window);
 
 // settings
-const unsigned int SCR_WIDTH  = 800 * 1;
+const unsigned int SCR_WIDTH = 800 * 1;
 const unsigned int SCR_HEIGHT = 600 * 1;
 
-// using Coord = float;
-// using N = uint32_t;
-// using Point = std::array<Coord, 2>;
-
-glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, -3000.0f);
-glm::vec3 lightPos  = glm::vec3(500.0f, 1000.0f, 1000.0f);
+glm::vec3 cameraPos = glm::vec3(-3350.0f, -350.0f, -7850.0f);
+glm::vec3 lightPos = glm::vec3(500.0f, 1000.0f, 1000.0f);
 
 int main()
 {
@@ -74,26 +67,17 @@ int main()
     //   FT_New_Face(ft_library, "/home/paulocanedo/Downloads/fonts/Starcraft Normal.ttf", 0, &face);
     //   FT_New_Face(ft_library, "/home/paulocanedo/Downloads/fonts/wetpm.ttf", 0, &face);
 
-    std::wstring text = L"@aá!";
-    // std::wstring text = L"Olá-Mundo3D";
-    // std::string text = "Paulo";
+    std::wstring text = L"Olá mundo 3D!";
+
     std::vector<Glyph> visualText;
 
-    for(auto it = text.begin(); it != text.end(); it++) {
+    for (auto it = text.begin(); it != text.end(); it++)
+    {
         unsigned long character = *it;
         Glyph glyph(face, character);
         visualText.push_back(glyph);
     }
 
-    // Glyph glyph(face, 'G');
-    // Glyph glyph2(face, 'H');
-
-    srand(static_cast<unsigned>(time(0)));
-
-    // const std::vector<std::vector<glm::vec2>> *contours = glyph.getContours();
-
-    // TextTessellation tt;
-    // std::vector<glm::vec3> contoursPoints3d = tt.tessellate(*contours, 100.0f);
     //--------------------------------------------------------------
 
     // glfw: initialize and configure
@@ -137,13 +121,10 @@ int main()
     // glm::mat4 projection = glm::ortho(-1000.0f, 1000.0f, -1000.0f, 1000.0f, -1000.0f, 1000.0f);
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, -100.0f, 1000.0f);
 
-    for(auto it = visualText.begin(); it != visualText.end(); it++)
+    for (auto it = visualText.begin(); it != visualText.end(); it++)
     {
         it->gpuUpload();
     }
-    // glyph.gpuUpload();
-    // glyph2.gpuUpload();
-
 
     // uncomment this call to draw in wireframe polygons.
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -164,7 +145,7 @@ int main()
         glm::mat4 model(1.0f);
         glm::mat4 view(1.0f);
 
-        model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(1.0f, 0.0f, 0.0f));
+        // model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(1.0f, 0.0f, 0.0f));
         view = glm::translate(view, cameraPos);
 
         shader.use();
@@ -177,12 +158,11 @@ int main()
         shader.setFloat("animation", sin(glfwGetTime()));
 
         for (auto it = visualText.begin(); it != visualText.end(); it++)
-        {    
+        {
             shader.setMat4("model", model);
             it->gpuDraw();
-            model = glm::translate(model, glm::vec3(it->advance.x * 1.1, 0.0f, 0.0f));
+            model = glm::translate(model, glm::vec3(it->advance.x, 0.0f, 0.0f));
         }
-
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
@@ -208,7 +188,7 @@ void processInput(GLFWwindow *window)
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
-    float cameraSpeed = 10.0f;
+    float cameraSpeed = 50.0f;
 
     if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
         cameraPos.x -= cameraSpeed;
@@ -222,12 +202,14 @@ void processInput(GLFWwindow *window)
     if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
         cameraPos.y -= cameraSpeed;
 
-    if (glfwGetKey(window, GLFW_KEY_KP_ADD) == GLFW_PRESS) {
-        cameraPos.z += cameraSpeed * 5.0f;
+    if (glfwGetKey(window, GLFW_KEY_KP_ADD) == GLFW_PRESS)
+    {
+        cameraPos.z += cameraSpeed;
     }
 
-    if (glfwGetKey(window, GLFW_KEY_KP_SUBTRACT) == GLFW_PRESS) {
-        cameraPos.z -= cameraSpeed * 5.0f;
+    if (glfwGetKey(window, GLFW_KEY_KP_SUBTRACT) == GLFW_PRESS)
+    {
+        cameraPos.z -= cameraSpeed;
     }
 }
 
