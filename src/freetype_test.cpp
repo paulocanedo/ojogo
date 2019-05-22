@@ -74,7 +74,8 @@ int main()
     //   FT_New_Face(ft_library, "/home/paulocanedo/Downloads/fonts/Starcraft Normal.ttf", 0, &face);
     //   FT_New_Face(ft_library, "/home/paulocanedo/Downloads/fonts/wetpm.ttf", 0, &face);
 
-    std::string text = "@";
+    std::wstring text = L"@aá!";
+    // std::wstring text = L"Olá-Mundo3D";
     // std::string text = "Paulo";
     std::vector<Glyph> visualText;
 
@@ -179,7 +180,7 @@ int main()
         {    
             shader.setMat4("model", model);
             it->gpuDraw();
-            model = glm::translate(model, glm::vec3(800.0f, 0.0f, 0.0f));
+            model = glm::translate(model, glm::vec3(it->advance.x * 1.1, 0.0f, 0.0f));
         }
 
 

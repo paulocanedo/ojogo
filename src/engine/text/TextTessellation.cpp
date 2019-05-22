@@ -57,14 +57,14 @@ void TextTessellation::fillSideFace(const std::vector<std::vector<glm::vec2>> &c
     }
 }
 
-bool TextTessellation::isOverlay(const std::vector<glm::vec2> &polygon1, const std::vector<glm::vec2> &polygon2)
+bool TextTessellation::isOverlay(const std::vector<glm::vec2> *polygon1, const std::vector<glm::vec2> *polygon2)
 {
-    const glm::vec2 *p0 = &polygon1.at(0);
+    const glm::vec2 *p0 = &polygon1->at(0);
     const float px0 = p0->x;
     const float py0 = p0->y;
 
     float minX = 999999.0f, maxX = -999999.0f, minY = 999999.0f, maxY = -999999.0f;
-    for (auto it = polygon2.begin(); it != polygon2.end(); it++)
+    for (auto it = polygon2->begin(); it != polygon2->end(); it++)
     {
         const float px = it->x;
         const float py = it->y;
@@ -83,14 +83,23 @@ std::vector<std::vector<glm::vec2>> TextTessellation::prepareForTriangulation(co
         return input;
 
     std::vector<std::vector<glm::vec2>> result = input;
-    std::vector<glm::vec2> poly1 = input.at(0);
-    std::vector<glm::vec2> poly2 = input.at(1);
-
-    if (this->isOverlay(poly1, poly2))
+    for (size_t i = 0; i < input.size(); i++)
     {
-        std::reverse(result.begin(), result.end());
+        for (size_t j = i; j < input.size(); j++)
+        {
+            if (i == j)
+                continue;
+
+            std::vector<glm::vec2> *poly1 = &(result.at(i));
+            std::vector<glm::vec2> *poly2 = &(result.at(j));
+
+            if (this->isOverlay(poly1, poly2))
+            {
+                iter_swap(result.begin() + i, result.begin() + j);
+            }
+        }
     }
-    
+
     return result;
 }
 
@@ -104,6 +113,46 @@ std::vector<glm::vec2> TextTessellation::mergePolygons(const std::vector<glm::ve
     return result;
 }
 
+std::pair<std::vector<std::vector<glm::vec2>>, std::vector<std::vector<glm::vec2>>> TextTessellation::classifyContours(std::vector<std::vector<glm::vec2>> input)
+{
+    std::pair<std::vector<std::vector<glm::vec2>>, std::vector<std::vector<glm::vec2>>> newContours;
+    std::vector<std::vector<glm::vec2>> overlaid;
+    std::vector<std::vector<glm::vec2>> nonOverlaid;
+
+    for (size_t i = 0; i < input.size(); i++)
+    {
+        std::vector<glm::vec2> *contour1 = &(input.at(i));
+
+        bool overlays = false;
+
+        for (size_t j = 0; j < input.size(); j++)
+        {
+            if (i == j)
+                continue;
+
+            std::vector<glm::vec2> *contour2 = &(input.at(j));
+            if (this->isOverlay(contour1, contour2) || this->isOverlay(contour2, contour1))
+            {
+                overlays = true;
+                break;
+            }
+        }
+
+        if (overlays)
+        {
+            overlaid.push_back(*contour1);
+        }
+        else
+        {
+            nonOverlaid.push_back(*contour1);
+        }
+    }
+
+    newContours.first = overlaid;
+    newContours.second = nonOverlaid;
+    return newContours;
+}
+
 void TextTessellation::tessellate(const std::vector<std::vector<glm::vec2>> &contours,
                                   const float depth,
                                   std::vector<glm::vec3> &result)
@@ -113,11 +162,13 @@ void TextTessellation::tessellate(const std::vector<std::vector<glm::vec2>> &con
 
     std::vector<glm::vec2> plain;
     std::vector<std::vector<glm::vec2>> polygon;
-    // std::vector<std::vector<glm::vec2>> preparedContours = contours;
-    std::vector<std::vector<glm::vec2>> preparedContours = this->prepareForTriangulation(contours);
-    for (auto it = preparedContours.begin(); it != preparedContours.end(); it++)
+
+    std::vector<std::vector<glm::vec2>> pContours = this->prepareForTriangulation(contours);
+    std::pair<std::vector<std::vector<glm::vec2>>, std::vector<std::vector<glm::vec2>>> classifiedContours = this->classifyContours(pContours);
+
+    //overlaid contours
+    for (auto it = classifiedContours.first.begin(); it != classifiedContours.first.end(); it++)
     {
-        // polygon.clear();
         polygon.push_back(*it);
         plain.insert(plain.end(), it->begin(), it->end());
     }
@@ -125,4 +176,47 @@ void TextTessellation::tessellate(const std::vector<std::vector<glm::vec2>> &con
     this->fillFrontFace(indices, plain, zValue1, result);
     this->fillSideFace(contours, zValue1, zValue2, result);
     this->fillFrontFace(indices, plain, zValue2, result);
+
+    //non overlaid contours
+    for (auto it = classifiedContours.second.begin(); it != classifiedContours.second.end(); it++)
+    {
+        polygon.clear();
+        polygon.push_back(*it);
+
+        indices = mapbox::earcut<unsigned int>(polygon);
+        this->fillFrontFace(indices, *it, zValue1, result);
+        this->fillSideFace(contours, zValue1, zValue2, result);
+        this->fillFrontFace(indices, *it, zValue2, result);
+    }
+
+    // for (auto it = classifiedContours.begin(); it != classifiedContours.end(); it++)
+    // {
+    //     bool overlays = it->first;
+    //     std::vector<glm::vec2> contour = it->second;
+    //     if (!overlays)
+    //     {
+
+    //     }
+    //     else
+    //     {
+    //         polygon.push_back(contour);
+    //         plain.insert(plain.end(), contour.begin(), contour.end());
+    //     }
+    //     std::vector<unsigned int> indices = mapbox::earcut<unsigned int>(polygon);
+    //     this->fillFrontFace(indices, plain, zValue1, result);
+    //     this->fillSideFace(contours, zValue1, zValue2, result);
+    //     this->fillFrontFace(indices, plain, zValue2, result);
+    // }
+
+    // std::vector<std::vector<glm::vec2>> preparedContours = this->prepareForTriangulation(contours);
+    // for (auto it = preparedContours.begin(); it != preparedContours.end(); it++)
+    // {
+    //     // polygon.clear();
+    //     polygon.push_back(*it);
+    //     plain.insert(plain.end(), it->begin(), it->end());
+    // }
+    // std::vector<unsigned int> indices = mapbox::earcut<unsigned int>(polygon);
+    // this->fillFrontFace(indices, plain, zValue1, result);
+    // this->fillSideFace(contours, zValue1, zValue2, result);
+    // this->fillFrontFace(indices, plain, zValue2, result);
 }

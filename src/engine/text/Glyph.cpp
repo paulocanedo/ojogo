@@ -35,9 +35,11 @@ void Glyph::parse()
         throw std::runtime_error("Couldn't extract the outline: FT_Outline_Decompose() failed");
     }
 
-    // FT_BBox boundingBox;
-    // FT_Outline_Get_BBox(&outline, &boundingBox);
+    FT_BBox boundingBox;
+    FT_Outline_Get_BBox(&outline, &boundingBox);
 
+    this->advance.x = boundingBox.xMax - boundingBox.xMin;
+    this->advance.y = boundingBox.yMax - boundingBox.yMin;
     // float xMin = boundingBox.xMin;
     // float yMin = boundingBox.yMin;
     // float xMax = boundingBox.xMax;

@@ -14,6 +14,7 @@ private:
     const FT_Face &face;
     const FT_ULong &code;
 
+
     float zValue = 0.0f;
     std::vector<std::vector<glm::vec2>> contours;
     std::vector<glm::vec3> contoursPoints3d;
@@ -39,4 +40,6 @@ public:
     void gpuFreeResources();
 
     void printTest();
+    
+    glm::vec2 advance;
 };
