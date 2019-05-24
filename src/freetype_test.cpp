@@ -39,13 +39,22 @@ GLenum glCheckError_(const char *file, int line)
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void processInput(GLFWwindow *window);
+void mouseCallback(GLFWwindow *window, double x, double y);
 
 // settings
 const unsigned int SCR_WIDTH = 800 * 1;
 const unsigned int SCR_HEIGHT = 600 * 1;
 
-glm::vec3 cameraPos = glm::vec3(-3350.0f, -350.0f, -7850.0f);
-glm::vec3 lightPos = glm::vec3(500.0f, 1000.0f, 1000.0f);
+glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 8000.0f);
+glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+glm::vec3 lightPos = glm::vec3(0.0f, 0.0f, 1000.0f);
+
+float deltaTime = 0.0f;
+float lastFrame = 0.0f;
+float lastX = SCR_WIDTH / 2.0f, lastY = SCR_HEIGHT / 2.0f;
+float yaw = -90.0f, pitch = 0.0f;
+bool firstMouse = true;
 
 int main()
 {
@@ -104,6 +113,7 @@ int main()
     }
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    glfwSetCursorPosCallback(window, mouseCallback);
 
     // glad: load all OpenGL function pointers
     // ---------------------------------------
@@ -145,8 +155,11 @@ int main()
         glm::mat4 model(1.0f);
         glm::mat4 view(1.0f);
 
+        model = glm::translate(model, glm::vec3(-4000.0f, 0.0f, 0.0f));
+
         model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(1.0f, 0.0f, 0.0f));
-        view = glm::translate(view, cameraPos);
+        view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+        // view = glm::translate(view, cameraPos);
 
         shader.use();
         shader.setVec3("uColor", 0.3f, 0.7f, 0.9f);
@@ -169,6 +182,10 @@ int main()
         // -------------------------------------------------------------------------------
         glfwSwapBuffers(window);
         glfwPollEvents();
+
+        float currentFrame = glfwGetTime();
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
         // glCheckError();
     }
 
@@ -189,29 +206,52 @@ void processInput(GLFWwindow *window)
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
-    float cameraSpeed = 50.0f;
+    float cameraSpeed = 3500.0f * deltaTime;
 
-    if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-        cameraPos.x -= cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        cameraPos += cameraSpeed * cameraFront;
 
-    if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-        cameraPos.x += cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        cameraPos -= cameraSpeed * cameraFront;
 
-    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-        cameraPos.y += cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
 
-    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-        cameraPos.y -= cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+}
 
-    if (glfwGetKey(window, GLFW_KEY_KP_ADD) == GLFW_PRESS)
+void mouseCallback(GLFWwindow *window, double x, double y)
+{
+    if (firstMouse)
     {
-        cameraPos.z += cameraSpeed;
+        lastX = x;
+        lastY = y;
+        firstMouse = false;
     }
 
-    if (glfwGetKey(window, GLFW_KEY_KP_SUBTRACT) == GLFW_PRESS)
-    {
-        cameraPos.z -= cameraSpeed;
-    }
+    float xoffset = x - lastX;
+    float yoffset = lastY - y;
+    lastX = x;
+    lastY = y;
+
+    float sensitivity = 0.05;
+    xoffset *= sensitivity;
+    yoffset *= sensitivity;
+
+    yaw += xoffset;
+    pitch += yoffset;
+
+    if (pitch > 89.0f)
+        pitch = 89.0f;
+    if (pitch < -89.0f)
+        pitch = -89.0f;
+
+    glm::vec3 front;
+    front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+    front.y = sin(glm::radians(pitch));
+    front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+    cameraFront = glm::normalize(front);
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes

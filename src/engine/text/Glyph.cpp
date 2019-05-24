@@ -55,7 +55,7 @@ void Glyph::gpuUpload()
         return;
 
     TextTessellation tt;
-    tt.tessellate(this->contours, 100.0f, this->contoursPoints3d);
+    tt.tessellate(this->contours, 400.0f, this->contoursPoints3d);
 
     glGenVertexArrays(1, &this->vao);
     glGenBuffers(1, &this->vbo);
